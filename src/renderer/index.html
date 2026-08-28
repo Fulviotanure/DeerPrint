@@ -676,6 +676,35 @@
                 </div>
               </label>
             </div>
+
+            <!-- Uninstall / Danger Zone Section -->
+            <div class="setting-section" style="margin-top: 22px; padding-top: 18px; border-top: 1px solid var(--border-subtle);">
+              <label class="setting-label text-danger">Gerenciamento do Aplicativo</label>
+              
+              <div class="uninstall-card">
+                <div class="uninstall-card-left">
+                  <div class="uninstall-icon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <polyline points="3 6 5 6 21 6"></polyline>
+                      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                      <line x1="10" y1="11" x2="10" y2="17"></line>
+                      <line x1="14" y1="11" x2="14" y2="17"></line>
+                    </svg>
+                  </div>
+                  <div class="uninstall-text">
+                    <div class="uninstall-title">Desinstalar ScreenshotMark</div>
+                    <div class="uninstall-desc">Remove completamente o aplicativo e os atalhos deste computador.</div>
+                  </div>
+                </div>
+                <button type="button" id="btn-uninstall-app" class="btn btn-danger-outline">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="3 6 5 6 21 6"></polyline>
+                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                  </svg>
+                  <span>Desinstalar</span>
+                </button>
+              </div>
+            </div>
           </div>
 
           <!-- TAB 2: TEMAS E APARÊNCIA -->
@@ -876,7 +905,7 @@
                   </div>
                   <div>
                     <div class="update-app-title">ScreenshotMark</div>
-                    <div class="update-app-version">Versão instalada: <span id="span-current-app-version" class="version-pill">v2.0.3</span></div>
+                    <div class="update-app-version">Versão instalada: <span id="span-current-app-version" class="version-pill">v2.0.4</span></div>
                   </div>
                 </div>
 
@@ -1048,6 +1077,25 @@
 
         <div class="modal-footer">
           <button id="btn-dismiss-help" class="btn btn-primary">Entendido, Começar!</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal de Confirmação de Desinstalação -->
+    <div id="modal-confirm-uninstall" class="modal-overlay hidden">
+      <div class="modal-card modal-confirm-card">
+        <div class="confirm-icon-box danger">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2">
+            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+            <line x1="12" y1="9" x2="12" y2="13"></line>
+            <line x1="12" y1="17" x2="12.01" y2="17"></line>
+          </svg>
+        </div>
+        <h3 class="confirm-modal-title">Deseja desinstalar o ScreenshotMark?</h3>
+        <p class="confirm-modal-desc">O assistente de desinstalação será iniciado e o aplicativo será fechado para remover os arquivos do seu computador.</p>
+        <div class="confirm-modal-actions">
+          <button id="btn-cancel-uninstall" type="button" class="btn btn-secondary">Cancelar</button>
+          <button id="btn-confirm-uninstall" type="button" class="btn btn-danger">Sim, Desinstalar</button>
         </div>
       </div>
     </div>

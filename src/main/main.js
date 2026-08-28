@@ -603,4 +603,43 @@ if (!isPrimaryInstance) {
     }
     return { success: true };
   });
+
+  ipcMain.handle('uninstall-app', async () => {
+    try {
+      const { spawn } = require('child_process');
+      const exeDir = path.dirname(process.execPath);
+      
+      const possibleUninstallerPaths = [
+        path.join(exeDir, 'Uninstall ScreenshotMark.exe'),
+        path.join(exeDir, 'Uninstall.exe'),
+        path.join(process.env.LOCALAPPDATA || '', 'Programs', 'screenshotmark', 'Uninstall ScreenshotMark.exe')
+      ];
+
+      let uninstallerToRun = null;
+      for (const p of possibleUninstallerPaths) {
+        if (fs.existsSync(p)) {
+          uninstallerToRun = p;
+          break;
+        }
+      }
+
+      if (uninstallerToRun) {
+        isQuitting = true;
+        spawn(uninstallerToRun, [], {
+          detached: true,
+          stdio: 'ignore'
+        }).unref();
+        setTimeout(() => {
+          app.quit();
+        }, 300);
+        return { success: true };
+      } else {
+        spawn('control', ['appwiz.cpl'], { detached: true, stdio: 'ignore' }).unref();
+        return { success: true, openedControlPanel: true };
+      }
+    } catch (err) {
+      console.error('Erro ao iniciar desinstalador:', err);
+      return { success: false, error: err.message };
+    }
+  });
 }

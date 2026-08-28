@@ -42,5 +42,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
     const handler = (event, statusObj) => callback(statusObj);
     ipcRenderer.on('updater:status', handler);
     return () => ipcRenderer.removeListener('updater:status', handler);
-  }
+  },
+
+  // Uninstall App
+  uninstallApp: () => ipcRenderer.invoke('uninstall-app')
 });

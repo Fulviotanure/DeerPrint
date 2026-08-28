@@ -197,6 +197,12 @@ const gubDesc = document.getElementById('gub-desc');
 const gubBtnAction = document.getElementById('gub-btn-action');
 const gubBtnClose = document.getElementById('gub-btn-close');
 
+// Uninstall Elements
+const btnUninstallApp = document.getElementById('btn-uninstall-app');
+const modalConfirmUninstall = document.getElementById('modal-confirm-uninstall');
+const btnCancelUninstall = document.getElementById('btn-cancel-uninstall');
+const btnConfirmUninstall = document.getElementById('btn-confirm-uninstall');
+
 // ==========================================================================
 // Application State
 // ==========================================================================
@@ -2898,6 +2904,35 @@ function setupEventListeners() {
 
   if (btnCloseHelp) btnCloseHelp.addEventListener('click', closeHelpModal);
   if (btnDismissHelp) btnDismissHelp.addEventListener('click', closeHelpModal);
+
+  // Uninstall App Listeners
+  if (btnUninstallApp) {
+    btnUninstallApp.addEventListener('click', () => {
+      if (modalConfirmUninstall) modalConfirmUninstall.classList.remove('hidden');
+    });
+  }
+
+  if (btnCancelUninstall) {
+    btnCancelUninstall.addEventListener('click', () => {
+      if (modalConfirmUninstall) modalConfirmUninstall.classList.add('hidden');
+    });
+  }
+
+  if (btnConfirmUninstall) {
+    btnConfirmUninstall.addEventListener('click', async () => {
+      btnConfirmUninstall.disabled = true;
+      btnConfirmUninstall.textContent = 'Iniciando...';
+      try {
+        await window.electronAPI.uninstallApp();
+      } catch (err) {
+        console.error('Erro ao desinstalar:', err);
+        showToast('Erro ao iniciar desinstalador.');
+        btnConfirmUninstall.disabled = false;
+        btnConfirmUninstall.textContent = 'Sim, Desinstalar';
+        if (modalConfirmUninstall) modalConfirmUninstall.classList.add('hidden');
+      }
+    });
+  }
 }
 
 // ==========================================================================
