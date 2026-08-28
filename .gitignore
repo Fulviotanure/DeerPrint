@@ -1,0 +1,7 @@
+node_modules/
+dist/
+dist_v1.0.0/
+release/
+*.log
+.DS_Store
+Thumbs.db

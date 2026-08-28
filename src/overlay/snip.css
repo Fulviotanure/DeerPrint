@@ -1,0 +1,168 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+body, html {
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  background: transparent;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  cursor: crosshair;
+}
+
+#snip-container {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+}
+
+#bg-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+}
+
+#dim-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.35);
+  z-index: 2;
+  pointer-events: none;
+  transition: opacity 0.15s ease;
+}
+
+#selection-box {
+  position: absolute;
+  z-index: 10;
+  border: 2px solid #38bdf8;
+  box-shadow: 0 0 0 9999px rgba(10, 15, 29, 0.5), 0 0 15px rgba(56, 189, 248, 0.6);
+  pointer-events: none;
+  background: transparent;
+}
+
+#selection-box.hidden {
+  display: none;
+}
+
+/* Corner Handles */
+.handle {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  background: #ffffff;
+  border: 1.5px solid #0284c7;
+  border-radius: 2px;
+}
+.handle-tl { top: -4px; left: -4px; }
+.handle-tr { top: -4px; right: -4px; }
+.handle-bl { bottom: -4px; left: -4px; }
+.handle-br { bottom: -4px; right: -4px; }
+
+/* Dimensions Badge */
+#dimension-badge {
+  position: absolute;
+  bottom: -28px;
+  left: 0;
+  background: rgba(15, 23, 42, 0.9);
+  color: #38bdf8;
+  font-size: 11px;
+  font-weight: 600;
+  font-mono: true;
+  padding: 3px 8px;
+  border-radius: 4px;
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+  white-space: nowrap;
+}
+
+/* Helper Bar */
+#helper-bar {
+  position: absolute;
+  top: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: rgba(15, 23, 42, 0.85);
+  backdrop-filter: blur(12px);
+  padding: 8px 18px;
+  border-radius: 30px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
+  z-index: 100;
+  pointer-events: none;
+}
+
+.helper-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #cbd5e1;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.helper-item kbd {
+  background: rgba(255, 255, 255, 0.12);
+  color: #38bdf8;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 700;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+/* Magnifier Loupe (Compacto e de Alta Precisão) */
+#loupe {
+  position: absolute;
+  width: 104px;
+  background: rgba(15, 23, 42, 0.96);
+  border: 1.5px solid #38bdf8;
+  border-radius: 8px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.75), 0 0 12px rgba(56, 189, 248, 0.3);
+  z-index: 120;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 3px;
+  transition: opacity 0.1s ease;
+}
+
+#loupe.hidden {
+  display: none;
+}
+
+#loupe-canvas {
+  width: 96px;
+  height: 96px;
+  border-radius: 5px;
+  image-rendering: pixelated;
+  image-rendering: -moz-crisp-edges;
+  image-rendering: crisp-edges;
+  display: block;
+}
+
+#loupe-info {
+  font-size: 10px;
+  color: #38bdf8;
+  font-weight: 700;
+  font-family: 'JetBrains Mono', monospace;
+  margin-top: 3px;
+  margin-bottom: 1px;
+  white-space: nowrap;
+  letter-spacing: -0.2px;
+}

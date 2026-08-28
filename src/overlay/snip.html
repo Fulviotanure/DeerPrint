@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Recorte de Tela</title>
+  <link rel="stylesheet" href="snip.css">
+</head>
+<body>
+  <div id="snip-container">
+    <!-- Full-screen canvas showing frozen display -->
+    <canvas id="bg-canvas"></canvas>
+    
+    <!-- Dimmed overlay mask -->
+    <div id="dim-overlay"></div>
+    
+    <!-- Selection Box -->
+    <div id="selection-box" class="hidden">
+      <div class="handle handle-tl"></div>
+      <div class="handle handle-tr"></div>
+      <div class="handle handle-bl"></div>
+      <div class="handle handle-br"></div>
+      <div id="dimension-badge">0 × 0 px</div>
+    </div>
+
+    <!-- Floating Helper Bar -->
+    <div id="helper-bar">
+      <div class="helper-item"><kbd>Arrastar</kbd> Selecionar área</div>
+      <div class="helper-item"><kbd>2x Clique</kbd> Tela inteira</div>
+      <div class="helper-item"><kbd>Esc</kbd> Cancelar</div>
+    </div>
+
+    <!-- Magnifier Loupe (Lupa compacta de precisão) -->
+    <div id="loupe" class="hidden">
+      <canvas id="loupe-canvas" width="96" height="96"></canvas>
+      <div id="loupe-info">X: 0 Y: 0</div>
+    </div>
+  </div>
+
+  <script src="snip.js"></script>
+</body>
+</html>

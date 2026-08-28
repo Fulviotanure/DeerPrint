@@ -1,0 +1,66 @@
+{
+  "name": "screenshotmark",
+  "version": "2.0.0",
+  "description": "App desktop moderno para captura de tela com atalho configurável e auto-save",
+  "main": "src/main/main.js",
+  "scripts": {
+    "start": "electron .",
+    "dev": "electron .",
+    "dist": "node scripts/build.js",
+    "build": "node scripts/build.js",
+    "publish:github": "electron-builder --win --publish always"
+  },
+  "keywords": [
+    "screenshot",
+    "screen-capture",
+    "electron",
+    "editor"
+  ],
+  "author": "",
+  "license": "MIT",
+  "build": {
+    "appId": "com.screenshotmark.app",
+    "productName": "ScreenshotMark",
+    "publish": {
+      "provider": "github",
+      "owner": "Fulviotanure",
+      "repo": "screenshotmark"
+    },
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "src/**/*",
+      "package.json"
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "src/assets/icon.ico"
+    },
+    "asarUnpack": [
+      "src/main/native/**/*"
+    ],
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "ScreenshotMark",
+      "runAfterFinish": true
+    }
+  },
+  "devDependencies": {
+    "electron": "^43.4.1",
+    "electron-builder": "^26.15.3"
+  },
+  "dependencies": {
+    "electron-updater": "^6.8.9"
+  }
+}
