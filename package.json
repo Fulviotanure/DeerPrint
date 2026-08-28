@@ -53,6 +53,7 @@
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
       "shortcutName": "ScreenshotMark",
+      "artifactName": "${productName}-Setup-${version}.${ext}",
       "runAfterFinish": true
     }
   },
