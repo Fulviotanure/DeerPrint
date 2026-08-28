@@ -1,6 +1,6 @@
 {
   "name": "screenshotmark",
-  "version": "2.0.1",
+  "version": "2.0.3",
   "description": "App desktop moderno para captura de tela com atalho configurável e auto-save",
   "main": "src/main/main.js",
   "scripts": {
@@ -58,7 +58,9 @@
       "createStartMenuShortcut": true,
       "shortcutName": "ScreenshotMark",
       "artifactName": "${productName}-Setup-${version}.${ext}",
-      "runAfterFinish": true
+      "runAfterFinish": true,
+      "installerIcon": "src/assets/icon.ico",
+      "uninstallerIcon": "src/assets/icon.ico"
     }
   },
   "devDependencies": {

@@ -186,6 +186,10 @@ const updateStatusDesc = document.getElementById('update-status-desc');
 const updateProgressContainer = document.getElementById('update-progress-container');
 const updateProgressBar = document.getElementById('update-progress-bar');
 const updateProgressPercent = document.getElementById('update-progress-percent');
+const updateProgressTransferred = document.getElementById('update-progress-transferred');
+const updateProgressSpeed = document.getElementById('update-progress-speed');
+const updateReleaseNotes = document.getElementById('update-release-notes');
+const updateReleaseNotesBody = document.getElementById('update-release-notes-body');
 const toggleAutoupdate = document.getElementById('toggle-autoupdate');
 const globalUpdateBanner = document.getElementById('global-update-banner');
 const gubTitle = document.getElementById('gub-title');
@@ -2947,6 +2951,20 @@ async function setupAutoUpdaterUI() {
   }
 }
 
+function formatUpdaterBytes(bytes) {
+  if (!bytes || isNaN(bytes) || bytes <= 0) return '0 MB';
+  const mb = bytes / (1024 * 1024);
+  return `${mb.toFixed(1)} MB`;
+}
+
+function formatUpdaterSpeed(bytesPerSec) {
+  if (!bytesPerSec || isNaN(bytesPerSec) || bytesPerSec <= 0) return '0 KB/s';
+  if (bytesPerSec >= 1024 * 1024) {
+    return `${(bytesPerSec / (1024 * 1024)).toFixed(1)} MB/s`;
+  }
+  return `${Math.round(bytesPerSec / 1024)} KB/s`;
+}
+
 function handleUpdaterStatus(statusObj) {
   if (!statusObj) return;
 
@@ -2960,6 +2978,7 @@ function handleUpdaterStatus(statusObj) {
     if (updateStatusTitle) updateStatusTitle.textContent = 'Buscando atualizações...';
     if (updateStatusDesc) updateStatusDesc.textContent = 'Consultando os lançamentos oficiais no GitHub Releases.';
     if (updateProgressContainer) updateProgressContainer.classList.add('hidden');
+    if (updateReleaseNotes) updateReleaseNotes.classList.add('hidden');
   } else if (status === 'available') {
     if (updateStatusBox) updateStatusBox.className = 'update-status-box status-available';
     if (iconCheckUpdates) iconCheckUpdates.classList.remove('spinning');
@@ -2971,6 +2990,11 @@ function handleUpdaterStatus(statusObj) {
     if (updateStatusTitle) updateStatusTitle.textContent = `Nova versão disponível: v${newVer}!`;
     if (updateStatusDesc) updateStatusDesc.textContent = 'Baixando os arquivos da nova versão em segundo plano...';
     if (updateProgressContainer) updateProgressContainer.classList.remove('hidden');
+
+    if (info && info.releaseNotes && updateReleaseNotes && updateReleaseNotesBody) {
+      updateReleaseNotesBody.textContent = typeof info.releaseNotes === 'string' ? info.releaseNotes : JSON.stringify(info.releaseNotes);
+      updateReleaseNotes.classList.remove('hidden');
+    }
   } else if (status === 'downloading') {
     if (updateStatusBox) updateStatusBox.className = 'update-status-box status-downloading';
     if (updateProgressContainer) updateProgressContainer.classList.remove('hidden');
@@ -2978,7 +3002,16 @@ function handleUpdaterStatus(statusObj) {
     if (updateProgressBar) updateProgressBar.style.width = `${pct}%`;
     if (updateProgressPercent) updateProgressPercent.textContent = `${pct}%`;
     if (updateStatusTitle) updateStatusTitle.textContent = `Baixando atualização (${pct}%)...`;
-    if (updateStatusDesc) updateStatusDesc.textContent = `Download em andamento. O app avisará quando estiver pronto para reiniciar.`;
+    if (updateStatusDesc) updateStatusDesc.textContent = `Download em segundo plano. O app avisará quando estiver pronto para instalar.`;
+
+    if (progress) {
+      if (updateProgressTransferred) {
+        updateProgressTransferred.textContent = `${formatUpdaterBytes(progress.transferred)} / ${formatUpdaterBytes(progress.total)}`;
+      }
+      if (updateProgressSpeed) {
+        updateProgressSpeed.textContent = formatUpdaterSpeed(progress.bytesPerSecond);
+      }
+    }
   } else if (status === 'downloaded') {
     if (updateStatusBox) updateStatusBox.className = 'update-status-box status-downloaded';
     if (iconCheckUpdates) iconCheckUpdates.classList.remove('spinning');
@@ -2988,7 +3021,7 @@ function handleUpdaterStatus(statusObj) {
 
     const newVer = info ? info.version : '';
     if (updateStatusTitle) updateStatusTitle.textContent = `Versão v${newVer} pronta para instalar!`;
-    if (updateStatusDesc) updateStatusDesc.textContent = 'Clique no botão abaixo para reiniciar e aplicar a atualização agora mesmo.';
+    if (updateStatusDesc) updateStatusDesc.textContent = 'Clique no botão abaixo para reiniciar e aplicar a atualização automaticamente.';
 
     // Exibe banner flutuante global
     if (globalUpdateBanner) {
@@ -3006,6 +3039,7 @@ function handleUpdaterStatus(statusObj) {
     }
     if (btnInstallUpdate) btnInstallUpdate.classList.add('hidden');
     if (updateProgressContainer) updateProgressContainer.classList.add('hidden');
+    if (updateReleaseNotes) updateReleaseNotes.classList.add('hidden');
     if (updateStatusTitle) updateStatusTitle.textContent = 'Você já está na versão mais recente!';
     if (updateStatusDesc) updateStatusDesc.textContent = message || 'Não há atualizações pendentes no GitHub Releases.';
   } else if (status === 'error') {
@@ -3018,6 +3052,7 @@ function handleUpdaterStatus(statusObj) {
     }
     if (btnInstallUpdate) btnInstallUpdate.classList.add('hidden');
     if (updateProgressContainer) updateProgressContainer.classList.add('hidden');
+    if (updateReleaseNotes) updateReleaseNotes.classList.add('hidden');
     if (updateStatusTitle) updateStatusTitle.textContent = 'Verificação de Atualização';
     if (updateStatusDesc) updateStatusDesc.textContent = message || error || 'Não foi possível verificar atualizações no momento.';
   }

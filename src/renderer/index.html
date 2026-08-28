@@ -876,7 +876,7 @@
                   </div>
                   <div>
                     <div class="update-app-title">ScreenshotMark</div>
-                    <div class="update-app-version">Versão instalada: <span id="span-current-app-version" class="version-pill">v1.0.0</span></div>
+                    <div class="update-app-version">Versão instalada: <span id="span-current-app-version" class="version-pill">v2.0.3</span></div>
                   </div>
                 </div>
 
@@ -890,11 +890,11 @@
                     </svg>
                     <span id="check-updates-text">Verificar Atualizações</span>
                   </button>
-                  <button id="btn-install-update" class="btn btn-accent-cyan hidden" type="button">
+                  <button id="btn-install-update" class="btn btn-accent-cyan btn-glow hidden" type="button">
                     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
                       <polyline points="20 6 9 17 4 12"></polyline>
                     </svg>
-                    <span>Reiniciar e Atualizar</span>
+                    <span>Reiniciar e Atualizar 🚀</span>
                   </button>
                 </div>
               </div>
@@ -908,15 +908,30 @@
                 </div>
               </div>
 
-              <!-- Download Progress Bar -->
+              <!-- Download Progress Bar with Details -->
               <div id="update-progress-container" class="update-progress-container hidden">
                 <div class="update-progress-header">
                   <span id="update-progress-label">Baixando atualização...</span>
-                  <span id="update-progress-percent">0%</span>
+                  <span id="update-progress-percent" class="update-pct-badge">0%</span>
                 </div>
                 <div class="update-progress-track">
                   <div id="update-progress-bar" class="update-progress-bar" style="width: 0%;"></div>
                 </div>
+                <div class="update-progress-footer">
+                  <span id="update-progress-transferred">0 MB / 0 MB</span>
+                  <span id="update-progress-speed">0 KB/s</span>
+                </div>
+              </div>
+
+              <!-- Release Notes Box -->
+              <div id="update-release-notes" class="update-release-notes hidden">
+                <div class="release-notes-header">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                  </svg>
+                  <span>Destaques da Versão</span>
+                </div>
+                <div id="update-release-notes-body" class="release-notes-body"></div>
               </div>
             </div>
 
@@ -1041,18 +1056,18 @@
     <div id="global-update-banner" class="global-update-banner hidden">
       <div class="gub-icon">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
-          <path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
-          <path d="M3 3v5h5"></path>
-          <path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"></path>
-          <path d="M16 21h5v-5"></path>
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+          <polyline points="7 10 12 15 17 10"></polyline>
+          <line x1="12" y1="15" x2="12" y2="3"></line>
         </svg>
       </div>
       <div class="gub-text">
+        <div class="gub-badge">NOVA ATUALIZAÇÃO</div>
         <div class="gub-title" id="gub-title">Nova Versão Disponível!</div>
         <div class="gub-desc" id="gub-desc">ScreenshotMark foi atualizado e está pronto.</div>
       </div>
       <div class="gub-actions">
-        <button id="gub-btn-action" class="btn btn-accent-cyan btn-sm">Reiniciar e Aplicar</button>
+        <button id="gub-btn-action" class="btn btn-accent-cyan btn-sm btn-glow">Reiniciar 🚀</button>
         <button id="gub-btn-close" class="btn-ghost-sm" title="Dispensar">✕</button>
       </div>
     </div>
