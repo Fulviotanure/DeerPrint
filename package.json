@@ -1,6 +1,6 @@
 {
   "name": "screenshotmark",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "App desktop moderno para captura de tela com atalho configurável e auto-save",
   "main": "src/main/main.js",
   "scripts": {
@@ -8,6 +8,7 @@
     "dev": "electron .",
     "dist": "node scripts/build.js",
     "build": "node scripts/build.js",
+    "release": "node scripts/publish-tag.js",
     "publish:github": "electron-builder --win --publish always"
   },
   "keywords": [
@@ -48,8 +49,10 @@
       "src/main/native/**/*"
     ],
     "nsis": {
-      "oneClick": false,
-      "allowToChangeInstallationDirectory": true,
+      "oneClick": true,
+      "perMachine": false,
+      "allowElevation": true,
+      "allowToChangeInstallationDirectory": false,
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
       "shortcutName": "ScreenshotMark",

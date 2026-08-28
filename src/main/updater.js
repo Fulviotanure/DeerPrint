@@ -126,7 +126,7 @@ function initUpdater(mainWindow, store) {
 
   ipcMain.handle('updater:quit-and-install', () => {
     try {
-      autoUpdater.quitAndInstall(false, true);
+      autoUpdater.quitAndInstall(true, true);
     } catch (err) {
       console.error('Erro ao instalar atualização:', err);
     }
