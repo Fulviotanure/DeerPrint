@@ -25,7 +25,8 @@
     "publish": {
       "provider": "github",
       "owner": "Fulviotanure",
-      "repo": "screenshotmark"
+      "repo": "screenshotmark",
+      "releaseType": "release"
     },
     "directories": {
       "output": "release"
