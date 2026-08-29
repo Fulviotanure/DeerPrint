@@ -320,6 +320,44 @@
                      var(--bg-primary);
 }
 
+/* --------------------------------------------------------------------------
+   8. MiniMax AI Theme (Obsidian Black, Electric Violet & Flame Gradient)
+   -------------------------------------------------------------------------- */
+#app-root[data-theme="minimax"] {
+  --bg-primary: #0b0c10;
+  --bg-secondary: #12141c;
+  --bg-tertiary: #1b1e2a;
+  --bg-card: rgba(18, 20, 28, 0.9);
+  --bg-card-hover: rgba(27, 30, 42, 0.95);
+  --bg-toolbar: rgba(18, 20, 28, 0.92);
+  --bg-input: #0b0c10;
+  --bg-chip: rgba(27, 30, 42, 0.8);
+
+  --accent-cyan: #8b5cf6; /* MiniMax Electric Violet */
+  --accent-cyan-glow: rgba(139, 92, 246, 0.45);
+  --accent-indigo: #6366f1; /* Quantum Indigo */
+  --accent-emerald: #06b6d4; /* Cyan Spark */
+  --accent-amber: #ffaa33;
+  --accent-rose: #ff4b55; /* MiniMax Flame */
+
+  --text-primary: #f8fafc;
+  --text-secondary: #cbd5e1;
+  --text-muted: #848a9e;
+
+  --border-subtle: rgba(139, 92, 246, 0.18);
+  --border-active: #8b5cf6;
+
+  --glass-bg: rgba(18, 20, 28, 0.9);
+  --glass-blur: blur(16px);
+  --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.55);
+
+  --canvas-grid-dot: rgba(139, 92, 246, 0.12);
+
+  --gradient-radial: radial-gradient(circle at 50% 0%, rgba(139, 92, 246, 0.12) 0%, transparent 60%),
+                     radial-gradient(circle at 100% 100%, rgba(255, 75, 85, 0.08) 0%, transparent 50%),
+                     var(--bg-primary);
+}
+
 /* ==========================================================================
    Clean Light & Tactile Cream Themes Overrides
    ========================================================================== */
@@ -3032,6 +3070,12 @@ body {
 .preview-tactilecream .tp-bar { background: #ded7c2; }
 .preview-tactilecream .tp-card { background: #fdfaf3; border: 1px solid #cec5af; }
 .preview-tactilecream .tp-accent { background: #1b6b69; box-shadow: 0 0 6px rgba(27, 107, 105, 0.4); }
+
+.preview-minimax { background: #0b0c10; }
+.preview-minimax .tp-dot { background: #ff4b55; }
+.preview-minimax .tp-bar { background: #1b1e2a; }
+.preview-minimax .tp-card { background: #12141c; border: 1px solid rgba(139, 92, 246, 0.25); }
+.preview-minimax .tp-accent { background: #8b5cf6; box-shadow: 0 0 6px rgba(139, 92, 246, 0.6); }
 
 .theme-info {
   display: flex;
