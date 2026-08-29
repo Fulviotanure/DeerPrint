@@ -1,6 +1,6 @@
 {
   "name": "screenshotmark",
-  "version": "2.1.0",
+  "version": "2.1.1",
   "description": "App desktop moderno para captura de tela com atalho configurável e auto-save",
   "main": "src/main/main.js",
   "scripts": {
