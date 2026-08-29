@@ -1,7 +1,7 @@
 {
-  "name": "screenshotmark",
+  "name": "deerprint",
   "version": "2.1.2",
-  "description": "App desktop moderno para captura de tela com atalho configurável e auto-save",
+  "description": "DeerPrint - App desktop moderno e profissional para captura de tela, anotações de precisão e produtividade",
   "main": "src/main/main.js",
   "scripts": {
     "start": "electron .",
@@ -12,20 +12,22 @@
     "publish:github": "electron-builder --win --publish always"
   },
   "keywords": [
+    "deerprint",
     "screenshot",
     "screen-capture",
     "electron",
-    "editor"
+    "editor",
+    "annotation"
   ],
   "author": "",
   "license": "MIT",
   "build": {
-    "appId": "com.screenshotmark.app",
-    "productName": "ScreenshotMark",
+    "appId": "com.deerprint.app",
+    "productName": "DeerPrint",
     "publish": {
       "provider": "github",
       "owner": "Fulviotanure",
-      "repo": "screenshotmark"
+      "repo": "deerprint"
     },
     "directories": {
       "output": "release"
@@ -55,7 +57,7 @@
       "allowToChangeInstallationDirectory": true,
       "createDesktopShortcut": "always",
       "createStartMenuShortcut": true,
-      "shortcutName": "ScreenshotMark",
+      "shortcutName": "DeerPrint",
       "artifactName": "${productName}-Setup-${version}.${ext}",
       "runAfterFinish": true,
       "installerIcon": "src/assets/icon.ico",

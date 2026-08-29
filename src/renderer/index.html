@@ -1,39 +1,29 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-BR" data-theme="dark">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ScreenshotMark - Editor</title>
-  <!-- Google Fonts -->
+  <title>DeerPrint - Editor de Capturas & Precisão</title>
+  <!-- Google Fonts: Manrope (Headlines) & Work Sans (Body/UI) + JetBrains Mono -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
-  <link rel="icon" type="image/png" href="../assets/icon.png">
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&family=Work+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/png" href="../assets/deerprint-logo.png">
   <link rel="stylesheet" href="index.css">
 </head>
 <body>
-  <div id="app-root">
+  <div id="app-root" data-theme="dark">
     <!-- Header / Navbar -->
     <header class="app-header">
       <div class="header-left">
-        <div class="app-brand">
+        <div class="app-brand" title="DeerPrint Desktop">
           <div class="brand-icon">
-            <img src="../assets/icon.png" alt="ScreenshotMark Icon" style="width: 26px; height: 26px; object-fit: contain;">
+            <img src="../assets/deerprint-logo.png" alt="DeerPrint Icon" style="width: 28px; height: 28px; object-fit: contain;">
           </div>
           <div class="brand-text">
-            <span class="brand-title">Screenshot<span class="brand-highlight">Mark</span></span>
+            <span class="brand-title">Deer<span class="brand-highlight">Print</span></span>
           </div>
         </div>
-
-        <!-- Capture Trigger Button in Header-Left with clean spacing -->
-        <button id="btn-capture-now" class="btn btn-primary btn-glow" title="Capturar nova área da tela">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
-            <circle cx="12" cy="12" r="10"></circle>
-            <circle cx="12" cy="12" r="3" fill="currentColor"></circle>
-          </svg>
-          <span class="btn-capture-text">Capturar</span>
-          <kbd id="header-shortcut-badge" class="shortcut-pill">PrintScreen</kbd>
-        </button>
       </div>
 
       <div class="header-center">
@@ -397,13 +387,6 @@
           <span>Copiar</span>
         </button>
 
-        <!-- Open Screenshots Folder -->
-        <button id="btn-open-folder" class="btn-icon" title="Abrir pasta de capturas no Explorer">
-          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.9l-.82-1.2A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z"></path>
-          </svg>
-        </button>
-
         <!-- Toggle History Sidebar -->
         <button id="btn-toggle-history" class="btn-icon relative" title="Histórico de capturas">
           <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -482,21 +465,19 @@
 
       <!-- Image Canvas Viewport -->
       <div id="viewport" class="viewport">
-        <!-- Empty state placeholder -->
+        <!-- Empty state placeholder com Arte do DeerPrint -->
         <div id="empty-state" class="empty-state">
           <div class="empty-glow"></div>
-          <div class="empty-icon-wrap">
-            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-              <path d="M4 16l4.586-4.586a2 2 0 0 1 2.828 0L16 16m-2-2 1.586-1.586a2 2 0 0 1 2.828 0L20 14m-6-6h.01M6 20h12a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2z"></path>
-            </svg>
+          <div class="empty-deer-wrap">
+            <img src="../assets/deerprint-logo.png" alt="DeerPrint Logo" class="empty-deer-logo" style="width: 140px; height: 140px; object-fit: contain; filter: drop-shadow(0 12px 28px rgba(0, 0, 0, 0.45));">
           </div>
-          <h2>Nenhuma captura no editor</h2>
-          <p>Pressione a tecla de atalho ou clique no botão acima para selecionar uma área da tela.</p>
+          <h2 class="empty-title">Nenhuma captura no DeerPrint</h2>
+          <p class="empty-desc">Pressione a tecla de atalho configurada para iniciar uma captura com retículo de precisão ou clique abaixo.</p>
           <div class="shortcut-hero">
-            <span>Atalho atual:</span>
+            <span>Atalho global de disparo:</span>
             <kbd id="empty-shortcut-badge" class="shortcut-hero-pill">PrintScreen</kbd>
           </div>
-          <button id="btn-empty-capture" class="btn btn-primary btn-lg">
+          <button id="btn-empty-capture" class="btn btn-primary btn-lg btn-glow">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
               <circle cx="12" cy="12" r="10"></circle>
               <circle cx="12" cy="12" r="3" fill="currentColor"></circle>
@@ -540,9 +521,16 @@
             </svg>
             <h3>Histórico de Capturas</h3>
           </div>
-          <button id="btn-close-history" class="btn-icon-close">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"></path></svg>
-          </button>
+          <div class="drawer-actions">
+            <button id="btn-open-folder" class="btn-icon" title="Abrir pasta de capturas no Explorer">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.9l-.82-1.2A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z"></path>
+              </svg>
+            </button>
+            <button id="btn-close-history" class="btn-icon-close" title="Fechar Histórico">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"></path></svg>
+            </button>
+          </div>
         </div>
 
         <div id="history-list" class="history-list">
@@ -583,7 +571,7 @@
                 <circle cx="12" cy="12" r="3"></circle>
               </svg>
             </div>
-            <h2>Configurações do ScreenshotMark</h2>
+            <h2>Configurações do DeerPrint</h2>
           </div>
           <button id="btn-close-settings" class="btn-icon-close">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"></path></svg>
@@ -597,15 +585,6 @@
               <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
             </svg>
             <span>Geral</span>
-          </button>
-          <button type="button" class="modal-tab-btn" data-tab="tab-themes">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="m19 11-8-8-8.6 8.6a2 2 0 0 0 0 2.8l5.2 5.2c.8.8 2 .8 2.8 0L19 11Z"></path>
-              <path d="m5 2 5 5"></path>
-              <path d="M2 13h15"></path>
-              <path d="M22 20a2 2 0 1 1-4 0c0-1.6 1.7-2.4 2-4 .3 1.6 2 2.4 2 4Z"></path>
-            </svg>
-            <span>Aparência & Temas</span>
           </button>
           <button type="button" class="modal-tab-btn" data-tab="tab-updates">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -660,11 +639,21 @@
               </div>
             </div>
 
-            <!-- Toggle Options -->
+            <!-- Toggle Options: Aparência & Comportamento -->
             <div class="setting-section" style="margin-top: 16px;">
-              <label class="setting-label">Comportamento e Inicialização</label>
+              <label class="setting-label">Aparência e Comportamento</label>
               
+              <!-- Switch Modo Escuro / Modo Claro -->
               <label class="toggle-option">
+                <input type="checkbox" id="toggle-dark-mode" checked>
+                <span class="toggle-slider"></span>
+                <div class="toggle-text">
+                  <span class="toggle-title" id="dark-mode-title">🌙 Modo Escuro (Obsidian Studio)</span>
+                  <span class="toggle-desc" id="dark-mode-desc">Interface escura com alto contraste. Desative para alternar para o Modo Claro.</span>
+                </div>
+              </label>
+
+              <label class="toggle-option" style="margin-top: 12px;">
                 <input type="checkbox" id="toggle-autostart" checked>
                 <span class="toggle-slider"></span>
                 <div class="toggle-text">
@@ -698,8 +687,8 @@
                     </svg>
                   </div>
                   <div class="uninstall-text">
-                    <div class="uninstall-title">Desinstalar ScreenshotMark</div>
-                    <div class="uninstall-desc">Remove completamente o aplicativo e os atalhos deste computador.</div>
+                    <div class="uninstall-title">Desinstalar DeerPrint</div>
+                    <div class="uninstall-desc">Remove completamente o DeerPrint do seu computador.</div>
                   </div>
                 </div>
                 <button type="button" id="btn-uninstall-app" class="btn btn-danger-outline">
@@ -713,288 +702,17 @@
             </div>
           </div>
 
-          <!-- TAB 2: TEMAS E APARÊNCIA -->
-          <div id="tab-themes" class="modal-tab-pane">
-            <div class="setting-section">
-              <label class="setting-label">Selecione o Tema da Interface</label>
-              <p class="setting-desc">Escolha uma das variações de aparência visual para transformar o design do editor.</p>
-
-              <div class="themes-grid">
-                <!-- 1. Midnight Dark -->
-                <div class="theme-card active" data-theme="midnight">
-                  <div class="theme-preview-box preview-midnight">
-                    <div class="theme-preview-header">
-                      <div class="tp-dot"></div>
-                      <div class="tp-bar"></div>
-                    </div>
-                    <div class="theme-preview-content">
-                      <div class="tp-card"></div>
-                      <div class="tp-accent"></div>
-                    </div>
-                  </div>
-                  <div class="theme-info">
-                    <div class="theme-title-row">
-                      <span class="theme-name">🌌 Midnight Dark</span>
-                      <span class="theme-tag">Padrão</span>
-                    </div>
-                    <p class="theme-desc">Escuro elegante com acentos em ciano elétrico e azul índigo.</p>
-                  </div>
-                </div>
-
-                <!-- 2. Cyberpunk Neon -->
-                <div class="theme-card" data-theme="cyberpunk">
-                  <div class="theme-preview-box preview-cyberpunk">
-                    <div class="theme-preview-header">
-                      <div class="tp-dot"></div>
-                      <div class="tp-bar"></div>
-                    </div>
-                    <div class="theme-preview-content">
-                      <div class="tp-card"></div>
-                      <div class="tp-accent"></div>
-                    </div>
-                  </div>
-                  <div class="theme-info">
-                    <div class="theme-title-row">
-                      <span class="theme-name">💜 Cyberpunk Neon</span>
-                      <span class="theme-tag">Neon</span>
-                    </div>
-                    <p class="theme-desc">Preto profundo com reflexos em roxo elétrico e magenta neon.</p>
-                  </div>
-                </div>
-
-                <!-- 3. Nordic Slate -->
-                <div class="theme-card" data-theme="nordic">
-                  <div class="theme-preview-box preview-nordic">
-                    <div class="theme-preview-header">
-                      <div class="tp-dot"></div>
-                      <div class="tp-bar"></div>
-                    </div>
-                    <div class="theme-preview-content">
-                      <div class="tp-card"></div>
-                      <div class="tp-accent"></div>
-                    </div>
-                  </div>
-                  <div class="theme-info">
-                    <div class="theme-title-row">
-                      <span class="theme-name">🌊 Nordic Slate</span>
-                      <span class="theme-tag">Oceano</span>
-                    </div>
-                    <p class="theme-desc">Tons de ardósia marítima, azul nórdico e toques em ciano ártico.</p>
-                  </div>
-                </div>
-
-                <!-- 4. Emerald Matrix -->
-                <div class="theme-card" data-theme="emerald">
-                  <div class="theme-preview-box preview-emerald">
-                    <div class="theme-preview-header">
-                      <div class="tp-dot"></div>
-                      <div class="tp-bar"></div>
-                    </div>
-                    <div class="theme-preview-content">
-                      <div class="tp-card"></div>
-                      <div class="tp-accent"></div>
-                    </div>
-                  </div>
-                  <div class="theme-info">
-                    <div class="theme-title-row">
-                      <span class="theme-name">🌲 Emerald Dark</span>
-                      <span class="theme-tag">Matrix</span>
-                    </div>
-                    <p class="theme-desc">Grafite profundo tecnológico com realces em verde esmeralda e menta.</p>
-                  </div>
-                </div>
-
-                <!-- 5. Clean Light -->
-                <div class="theme-card" data-theme="light">
-                  <div class="theme-preview-box preview-light">
-                    <div class="theme-preview-header">
-                      <div class="tp-dot"></div>
-                      <div class="tp-bar"></div>
-                    </div>
-                    <div class="theme-preview-content">
-                      <div class="tp-card"></div>
-                      <div class="tp-accent"></div>
-                    </div>
-                  </div>
-                  <div class="theme-info">
-                    <div class="theme-title-row">
-                      <span class="theme-name">☀️ Clean Light</span>
-                      <span class="theme-tag">Claro</span>
-                    </div>
-                    <p class="theme-desc">Visual claro e minimalista para trabalho com máxima iluminação.</p>
-                  </div>
-                </div>
-
-                <!-- 6. Industrial Rust & Aqua (Brutalist) -->
-                <div class="theme-card" data-theme="industrial">
-                  <div class="theme-preview-box preview-industrial">
-                    <div class="theme-preview-header">
-                      <div class="tp-dot"></div>
-                      <div class="tp-bar"></div>
-                    </div>
-                    <div class="theme-preview-content">
-                      <div class="tp-card"></div>
-                      <div class="tp-accent"></div>
-                    </div>
-                  </div>
-                  <div class="theme-info">
-                    <div class="theme-title-row">
-                      <span class="theme-name">🏷️ Iron & Rust</span>
-                      <span class="theme-tag">Brutalist</span>
-                    </div>
-                    <p class="theme-desc">Ardósia Iron Core, acentos em Rust Signal e Industrial Aqua.</p>
-                  </div>
-                </div>
-
-                <!-- 7. Retro Web 90s -->
-                <div class="theme-card" data-theme="retroweb">
-                  <div class="theme-preview-box preview-retroweb">
-                    <div class="theme-preview-header">
-                      <div class="tp-dot"></div>
-                      <div class="tp-bar"></div>
-                    </div>
-                    <div class="theme-preview-content">
-                      <div class="tp-card"></div>
-                      <div class="tp-accent"></div>
-                    </div>
-                  </div>
-                  <div class="theme-info">
-                    <div class="theme-title-row">
-                      <span class="theme-name">👾 Retro Web 90s</span>
-                      <span class="theme-tag">Arcade</span>
-                    </div>
-                    <p class="theme-desc">Nostalgia dos anos 90 com Netscape Indigo, CRT Cream e acentos arcade.</p>
-                  </div>
-                </div>
-
-                <!-- 8. Architectural Cream -->
-                <div class="theme-card" data-theme="tactilecream">
-                  <div class="theme-preview-box preview-tactilecream">
-                    <div class="theme-preview-header">
-                      <div class="tp-dot"></div>
-                      <div class="tp-bar"></div>
-                    </div>
-                    <div class="theme-preview-content">
-                      <div class="tp-card"></div>
-                      <div class="tp-accent"></div>
-                    </div>
-                  </div>
-                  <div class="theme-info">
-                    <div class="theme-title-row">
-                      <span class="theme-name">📜 Architectural Cream</span>
-                      <span class="theme-tag">Editorial</span>
-                    </div>
-                    <p class="theme-desc">Papel creme técnico suave, detalhes em terracota e tinta Iron Ink.</p>
-                  </div>
-                </div>
-
-                <!-- 9. MiniMax AI -->
-                <div class="theme-card" data-theme="minimax">
-                  <div class="theme-preview-box preview-minimax">
-                    <div class="theme-preview-header">
-                      <div class="tp-dot"></div>
-                      <div class="tp-bar"></div>
-                    </div>
-                    <div class="theme-preview-content">
-                      <div class="tp-card"></div>
-                      <div class="tp-accent"></div>
-                    </div>
-                  </div>
-                  <div class="theme-info">
-                    <div class="theme-title-row">
-                      <span class="theme-name">⚡ MiniMax AI</span>
-                      <span class="theme-tag">Violet/Flame</span>
-                    </div>
-                    <p class="theme-desc">Visual escuro de alta performance com violeta elétrico e chamas MiniMax.</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- SECTION 2: ESTILO DOS BOTÕES E CONTROLES (4 TEMAS DE BOTÕES) -->
-            <div class="setting-section" style="margin-top: 20px;">
-              <label class="setting-label">Estilo dos Botões & Controles</label>
-              <p class="setting-desc">Escolha o formato e a geometria dos botões para combinar com o tema visual.</p>
-
-              <div class="btn-styles-grid">
-                <!-- 1. Clássico Elegante (Rounded) -->
-                <div class="btn-style-card" data-btn-style="rounded">
-                  <div class="btn-style-preview">
-                    <div class="bsp-btn bsp-rounded bsp-primary">Capturar</div>
-                    <div class="bsp-btn bsp-rounded bsp-secondary">Salvar</div>
-                  </div>
-                  <div class="theme-info">
-                    <div class="theme-title-row">
-                      <span class="theme-name">🟦 Clássico Elegante</span>
-                      <span class="theme-tag">Rounded</span>
-                    </div>
-                    <p class="theme-desc">Cantos levemente arredondados, design técnico e equilibrado.</p>
-                  </div>
-                </div>
-
-                <!-- 2. Pílula Moderna (Pill) -->
-                <div class="btn-style-card" data-btn-style="pill">
-                  <div class="btn-style-preview">
-                    <div class="bsp-btn bsp-pill bsp-primary">Capturar</div>
-                    <div class="bsp-btn bsp-pill bsp-secondary">Salvar</div>
-                  </div>
-                  <div class="theme-info">
-                    <div class="theme-title-row">
-                      <span class="theme-name">💊 Pílula Moderna</span>
-                      <span class="theme-tag">Pill</span>
-                    </div>
-                    <p class="theme-desc">Curvatura contínua 100% arredondada, suave e orgânica.</p>
-                  </div>
-                </div>
-
-                <!-- 3. Vidro Futurista (Glassmorphic) -->
-                <div class="btn-style-card" data-btn-style="glass">
-                  <div class="btn-style-preview">
-                    <div class="bsp-btn bsp-glass bsp-primary">Capturar</div>
-                    <div class="bsp-btn bsp-glass bsp-secondary">Salvar</div>
-                  </div>
-                  <div class="theme-info">
-                    <div class="theme-title-row">
-                      <span class="theme-name">✨ Vidro Futurista</span>
-                      <span class="theme-tag">Glass</span>
-                    </div>
-                    <p class="theme-desc">Efeito translúcido de vidro fosco com brilho sutil nas bordas.</p>
-                  </div>
-                </div>
-
-                <!-- 4. Minimalista Sharp (Flat - Padrão) -->
-                <div class="btn-style-card active" data-btn-style="flat">
-                  <div class="btn-style-preview">
-                    <div class="bsp-btn bsp-flat bsp-primary">Capturar</div>
-                    <div class="bsp-btn bsp-flat bsp-secondary">Salvar</div>
-                  </div>
-                  <div class="theme-info">
-                    <div class="theme-title-row">
-                      <span class="theme-name">⚡ Minimalista Sharp</span>
-                      <span class="theme-tag">Padrão</span>
-                    </div>
-                    <p class="theme-desc">Geometria reta e compacta para máxima área útil e foco.</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- TAB 3: ATUALIZAÇÕES AUTOMÁTICAS -->
+          <!-- TAB 2: ATUALIZAÇÕES AUTOMÁTICAS -->
           <div id="tab-updates" class="modal-tab-pane">
             <div class="setting-section">
               <!-- Version Banner Card -->
               <div class="update-card">
                 <div class="update-card-left">
                   <div class="update-app-icon">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                      <rect width="18" height="18" x="3" y="3" rx="2"></rect>
-                      <circle cx="9" cy="9" r="2"></circle>
-                      <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"></path>
-                    </svg>
+                    <img src="../assets/deerprint-logo.png" alt="DeerPrint" style="width: 28px; height: 28px; object-fit: contain;">
                   </div>
                   <div>
-                    <div class="update-app-title">ScreenshotMark</div>
+                    <div class="update-app-title">DeerPrint</div>
                     <div class="update-app-version">Versão instalada: <span id="span-current-app-version" class="version-pill">v2.1.2</span></div>
                   </div>
                 </div>
@@ -1018,12 +736,17 @@
                 </div>
               </div>
 
+              <!-- Aviso de Grande Reformulação de Marca -->
+              <div class="update-revamp-banner" style="margin-top: 14px; padding: 12px 14px; background: rgba(184, 205, 167, 0.12); border: 1px solid var(--border-active); font-size: 12px; line-height: 1.5; color: var(--text-primary);">
+                🦌 <strong>Aviso de Atualização Radical:</strong> O aplicativo agora é <strong>DeerPrint</strong>! Uma evolução completa com a nova identidade visual, sistema de design orgânico <em>Sylvan Core</em>, novas ferramentas e maior precisão técnica para seu fluxo diário.
+              </div>
+
               <!-- Status Box -->
               <div id="update-status-box" class="update-status-box status-idle">
                 <div class="status-indicator-dot"></div>
                 <div class="status-content">
                   <div id="update-status-title" class="status-title">Pronto para verificar</div>
-                  <div id="update-status-desc" class="status-desc">O aplicativo busca lançamentos oficiais no GitHub Releases.</div>
+                  <div id="update-status-desc" class="status-desc">O aplicativo busca lançamentos oficiais no GitHub Releases do DeerPrint.</div>
                 </div>
               </div>
 
@@ -1063,7 +786,7 @@
                 <span class="toggle-slider"></span>
                 <div class="toggle-text">
                   <span class="toggle-title">Verificar atualizações automaticamente ao iniciar</span>
-                  <span class="toggle-desc">Busca novas versões silenciosamente e avisa quando uma atualização estiver pronta para instalar.</span>
+                  <span class="toggle-desc">Busca novas versões silenciosamente e avisa quando uma atualização do DeerPrint estiver pronta para instalar.</span>
                 </div>
               </label>
             </div>
@@ -1089,7 +812,7 @@
                 <circle cx="12" cy="16.5" r="1.1" fill="currentColor" stroke="none"></circle>
               </svg>
             </div>
-            <h2>Instruções de Uso & Guia Rápido</h2>
+            <h2>DeerPrint - Instruções de Uso & Atalhos</h2>
           </div>
           <button id="btn-close-help" class="btn-icon-close" title="Fechar">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
@@ -1104,8 +827,8 @@
                 <span class="help-step-icon">📸</span>
                 <h3>Como Capturar a Tela</h3>
               </div>
-              <p>Pressione a tecla de atalho configurada (<kbd class="shortcut-pill">PrintScreen</kbd>) ou clique em <strong>Capturar</strong> no topo.</p>
-              <p>Arraste o cursor sobre a área desejada da tela. O print será aberto no editor e copiado imediatamente para a área de transferência (<kbd class="shortcut-pill">Ctrl+V</kbd>).</p>
+              <p>Pressione a tecla de atalho configurada (<kbd class="shortcut-pill">PrintScreen</kbd>) em qualquer lugar do Windows.</p>
+              <p>Arraste o cursor sobre a área desejada. O print será aberto no DeerPrint e copiado imediatamente para a área de transferência (<kbd class="shortcut-pill">Ctrl+V</kbd>).</p>
             </div>
 
             <!-- Card 2: Palavras / Tags & Texto -->
@@ -1201,7 +924,7 @@
             <line x1="12" y1="17" x2="12.01" y2="17"></line>
           </svg>
         </div>
-        <h3 class="confirm-modal-title">Deseja desinstalar o ScreenshotMark?</h3>
+        <h3 class="confirm-modal-title">Deseja desinstalar o DeerPrint?</h3>
         <p class="confirm-modal-desc">O assistente de desinstalação será iniciado e o aplicativo será fechado para remover os arquivos do seu computador.</p>
         <div class="confirm-modal-actions">
           <button id="btn-cancel-uninstall" type="button" class="btn btn-secondary">Cancelar</button>
@@ -1222,7 +945,7 @@
       <div class="gub-text">
         <div class="gub-badge">NOVA ATUALIZAÇÃO</div>
         <div class="gub-title" id="gub-title">Nova Versão Disponível!</div>
-        <div class="gub-desc" id="gub-desc">ScreenshotMark foi atualizado e está pronto.</div>
+        <div class="gub-desc" id="gub-desc">DeerPrint foi atualizado com sucesso e está pronto.</div>
       </div>
       <div class="gub-actions">
         <button id="gub-btn-action" class="btn btn-accent-cyan btn-sm btn-glow">Reiniciar 🚀</button>

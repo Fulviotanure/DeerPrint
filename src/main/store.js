@@ -8,8 +8,8 @@ class Store {
     this.configPath = path.join(this.userDataPath, 'settings.json');
     this.historyPath = path.join(this.userDataPath, 'history.json');
     
-    // Default screenshots directory: User's Pictures/ScreenshotMark or local ./screenshots
-    const defaultPicturesDir = path.join(app.getPath('pictures'), 'ScreenshotMark');
+    // Default screenshots directory: User's Pictures/DeerPrint
+    const defaultPicturesDir = path.join(app.getPath('pictures'), 'DeerPrint');
     
     this.defaultSettings = {
       hotkey: 'PrintScreen', // Default trigger key (supports PrintScreen, F10, Ctrl+Shift+S, etc.)
@@ -19,8 +19,8 @@ class Store {
       autoCheckUpdates: true,
       playSound: true,
       openEditorOnCapture: true,
-      theme: 'midnight',
-      buttonStyle: 'flat'
+      theme: 'dark',
+      buttonStyle: 'sharp'
     };
 
     this.settings = this.loadSettings();

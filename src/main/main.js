@@ -41,7 +41,14 @@ if (!isPrimaryInstance) {
     return getAppIcon();
   }
 
-  function createMainWindow() {
+  function createMainWindow(showImmediately = true) {
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      if (showImmediately) {
+        showMainWindow();
+      }
+      return;
+    }
+
     const appIcon = getAppIcon();
 
     mainWindow = new BrowserWindow({
@@ -49,9 +56,10 @@ if (!isPrimaryInstance) {
       height: 800,
       minWidth: 800,
       minHeight: 600,
+      show: showImmediately,
       icon: appIcon || undefined,
-      backgroundColor: '#0f1117',
-      title: 'ScreenshotMark - Editor',
+      backgroundColor: '#121412',
+      title: 'DeerPrint - Editor & Capturas',
       webPreferences: {
         preload: path.join(__dirname, '../preload/editor-preload.js'),
         contextIsolation: true,
@@ -81,7 +89,7 @@ if (!isPrimaryInstance) {
 
   function showMainWindow() {
     if (!mainWindow || mainWindow.isDestroyed()) {
-      createMainWindow();
+      createMainWindow(true);
     } else {
       if (mainWindow.isMinimized()) mainWindow.restore();
       mainWindow.show();
@@ -91,18 +99,19 @@ if (!isPrimaryInstance) {
 
   function applyAutoStart(enable) {
     try {
+      const appPath = process.execPath;
       if (app.isPackaged) {
         app.setLoginItemSettings({
           openAtLogin: !!enable,
           openAsHidden: true,
-          path: process.execPath,
+          path: appPath,
           args: ['--hidden']
         });
       } else {
         app.setLoginItemSettings({
           openAtLogin: !!enable,
           openAsHidden: true,
-          path: process.execPath,
+          path: appPath,
           args: [path.resolve(process.argv[1]), '--hidden']
         });
       }
@@ -154,7 +163,7 @@ if (!isPrimaryInstance) {
       },
       { type: 'separator' },
       {
-        label: '❌ Fechar ScreenshotMark',
+        label: '❌ Fechar DeerPrint',
         click: () => {
           isQuitting = true;
           app.quit();
@@ -162,7 +171,7 @@ if (!isPrimaryInstance) {
       }
     ]);
 
-    tray.setToolTip(`ScreenshotMark - Em segundo plano (${currentHotkey})`);
+    tray.setToolTip(`DeerPrint - Em segundo plano (${currentHotkey})`);
     tray.setContextMenu(contextMenu);
   }
 
@@ -306,9 +315,19 @@ if (!isPrimaryInstance) {
 
     createTray();
 
-    const isHiddenLaunch = process.argv.includes('--hidden') || process.argv.includes('--minimized');
-    if (!isHiddenLaunch) {
-      createMainWindow();
+    const loginSettings = app.getLoginItemSettings();
+    const isStartupLaunch = !!(loginSettings.wasOpenedAtLogin || loginSettings.wasOpenedAsHidden);
+    const hasHiddenFlag = process.argv.some(arg => {
+      const lower = String(arg).toLowerCase();
+      return ['--hidden', '--minimized', '-hidden', '/hidden', '--autostart', '-silent', '--silent', '/background'].includes(lower);
+    });
+    const isHiddenLaunch = isStartupLaunch || hasHiddenFlag;
+
+    if (isHiddenLaunch) {
+      // Cria a janela sem exibir na tela (show: false) para deixar apenas o ícone na bandeja
+      createMainWindow(false);
+    } else {
+      createMainWindow(true);
     }
 
     // Registra atalho configurado
@@ -549,7 +568,7 @@ if (!isPrimaryInstance) {
       // 4. Se o editor estava aberto, restaura/mostra o editor com a nova captura.
       // Se a captura foi tirada em segundo plano pelo atalho F10, mantém minimizado/em bandeja sem roubar foco!
       if (!mainWindow || mainWindow.isDestroyed()) {
-        createMainWindow();
+        createMainWindow(wasEditorOpenBeforeCapture);
         mainWindow.webContents.once('did-finish-load', () => {
           mainWindow.webContents.send('new-screenshot', {
             ...entry,
@@ -558,8 +577,6 @@ if (!isPrimaryInstance) {
           if (wasEditorOpenBeforeCapture) {
             mainWindow.show();
             mainWindow.focus();
-          } else {
-            mainWindow.hide();
           }
         });
       } else {
@@ -610,8 +627,10 @@ if (!isPrimaryInstance) {
       const exeDir = path.dirname(process.execPath);
       
       const possibleUninstallerPaths = [
+        path.join(exeDir, 'Uninstall DeerPrint.exe'),
         path.join(exeDir, 'Uninstall ScreenshotMark.exe'),
         path.join(exeDir, 'Uninstall.exe'),
+        path.join(process.env.LOCALAPPDATA || '', 'Programs', 'deerprint', 'Uninstall DeerPrint.exe'),
         path.join(process.env.LOCALAPPDATA || '', 'Programs', 'screenshotmark', 'Uninstall ScreenshotMark.exe')
       ];
 

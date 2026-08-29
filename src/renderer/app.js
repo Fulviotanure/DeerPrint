@@ -155,14 +155,13 @@ const recordBtnText = document.getElementById('record-btn-text');
 const inputSavePath = document.getElementById('input-save-path');
 const btnBrowseFolder = document.getElementById('btn-browse-folder');
 const btnModalOpenFolder = document.getElementById('btn-modal-open-folder');
+const toggleDarkMode = document.getElementById('toggle-dark-mode');
 const toggleAutostart = document.getElementById('toggle-autostart');
 const toggleAutocopy = document.getElementById('toggle-autocopy');
 const presetButtons = document.querySelectorAll('.preset-btn');
 const appRoot = document.getElementById('app-root');
 const modalTabBtns = document.querySelectorAll('.modal-tab-btn');
 const modalTabPanes = document.querySelectorAll('.modal-tab-pane');
-const themeCards = document.querySelectorAll('.theme-card');
-const btnStyleCards = document.querySelectorAll('.btn-style-card');
 
 // Help Modal (?)
 const helpModal = document.getElementById('help-modal');
@@ -212,8 +211,7 @@ let state = {
     hotkey: 'PrintScreen',
     saveDirectory: '',
     autoCopy: true,
-    theme: 'midnight',
-    buttonStyle: 'flat'
+    theme: 'dark'
   },
   history: [],
   zoom: 1,
@@ -272,69 +270,44 @@ async function initApp() {
   });
 }
 
-// Load and persist user tool settings (Color, Stroke, Font Size, Blur)
+// Load and persist user tool settings (Color, Stroke, Font Size, Blur, Theme)
 function loadUserPreferences() {
   try {
-    const savedColor = localStorage.getItem('screenshotmark_active_color') || '#ef4444';
+    const savedColor = localStorage.getItem('deerprint_active_color') || localStorage.getItem('screenshotmark_active_color') || '#ef4444';
     state.activeColor = savedColor;
     if (activeColorSwatch) activeColorSwatch.style.backgroundColor = savedColor;
     if (paletteCurrentHex) paletteCurrentHex.textContent = savedColor.toUpperCase();
     if (strokePreviewLine) strokePreviewLine.style.backgroundColor = savedColor;
 
-    const savedStroke = localStorage.getItem('screenshotmark_stroke_width') || '4';
+    const savedStroke = localStorage.getItem('deerprint_stroke_width') || localStorage.getItem('screenshotmark_stroke_width') || '4';
     setActiveStrokeWidth(parseInt(savedStroke, 10));
 
-    const savedFontSize = localStorage.getItem('screenshotmark_font_size') || '16';
+    const savedFontSize = localStorage.getItem('deerprint_font_size') || localStorage.getItem('screenshotmark_font_size') || '16';
     updateTextSizeUI(parseInt(savedFontSize, 10));
 
-    const savedBlur = localStorage.getItem('screenshotmark_blur_strength') || '4.2';
+    const savedBlur = localStorage.getItem('deerprint_blur_strength') || localStorage.getItem('screenshotmark_blur_strength') || '4.2';
     setBlurStrength(parseFloat(savedBlur));
 
-    const savedTheme = localStorage.getItem('screenshotmark_theme');
-    if (savedTheme) {
-      applyTheme(savedTheme);
-    }
-    const savedBtnStyle = localStorage.getItem('screenshotmark_btn_style');
-    if (savedBtnStyle) {
-      applyButtonStyle(savedBtnStyle);
-    } else {
-      applyButtonStyle('flat');
-    }
+    const savedTheme = localStorage.getItem('deerprint_theme') || localStorage.getItem('screenshotmark_theme') || 'dark';
+    applyTheme(savedTheme);
   } catch (e) {
     console.warn('Erro ao carregar preferências:', e);
   }
 }
 
-// Apply selected visual theme (Colors)
+// Apply selected visual theme (Sylvan Core Dark / Sylvan Core Light)
 function applyTheme(themeId) {
-  if (!themeId) themeId = 'midnight';
-  state.settings.theme = themeId;
+  const normalizedTheme = themeId === 'light' ? 'light' : 'dark';
+  state.settings.theme = normalizedTheme;
   if (appRoot) {
-    appRoot.setAttribute('data-theme', themeId);
+    appRoot.setAttribute('data-theme', normalizedTheme);
   }
-  document.documentElement.setAttribute('data-theme', themeId);
-  localStorage.setItem('screenshotmark_theme', themeId);
+  document.documentElement.setAttribute('data-theme', normalizedTheme);
+  localStorage.setItem('deerprint_theme', normalizedTheme);
 
-  themeCards.forEach(card => {
-    const cardTheme = card.getAttribute('data-theme');
-    card.classList.toggle('active', cardTheme === themeId);
-  });
-}
-
-// Apply selected button geometry / appearance style (4 Variações)
-function applyButtonStyle(styleId) {
-  if (!styleId) styleId = 'flat';
-  state.settings.buttonStyle = styleId;
-  if (appRoot) {
-    appRoot.setAttribute('data-btn-style', styleId);
+  if (toggleDarkMode) {
+    toggleDarkMode.checked = normalizedTheme !== 'light';
   }
-  document.documentElement.setAttribute('data-btn-style', styleId);
-  localStorage.setItem('screenshotmark_btn_style', styleId);
-
-  btnStyleCards.forEach(card => {
-    const cardStyle = card.getAttribute('data-btn-style');
-    card.classList.toggle('active', cardStyle === styleId);
-  });
 }
 
 // ==========================================================================
@@ -430,7 +403,7 @@ function triggerAutoSave() {
 // ==========================================================================
 function loadVariables() {
   try {
-    const saved = localStorage.getItem('screenshotmark_variables');
+    const saved = localStorage.getItem('deerprint_variables') || localStorage.getItem('screenshotmark_variables');
     if (saved) {
       state.variables = JSON.parse(saved);
     }
@@ -442,7 +415,7 @@ function loadVariables() {
 
 function saveVariables() {
   try {
-    localStorage.setItem('screenshotmark_variables', JSON.stringify(state.variables));
+    localStorage.setItem('deerprint_variables', JSON.stringify(state.variables));
   } catch (e) {
     console.warn('Erro ao salvar variáveis:', e);
   }
@@ -471,6 +444,7 @@ function renderVariablesList() {
       draggedVariableIndex = index;
       e.dataTransfer.setData('text/plain', item);
       e.dataTransfer.setData('application/x-var-index', index.toString());
+      e.dataTransfer.setData('application/x-deerprint-variable', item);
       e.dataTransfer.setData('application/x-screenshotmark-variable', item);
       e.dataTransfer.effectAllowed = 'copyMove';
       chip.classList.add('dragging');
@@ -595,12 +569,12 @@ function setupVariablesSidebar() {
     canvasWrapper.classList.remove('drop-target-active');
 
     // Valida se o drop veio exclusivamente da barra lateral de variáveis/palavras
-    const isVariableDrop = e.dataTransfer.types.includes('application/x-screenshotmark-variable') || e.dataTransfer.types.includes('application/x-var-index');
+    const isVariableDrop = e.dataTransfer.types.includes('application/x-deerprint-variable') || e.dataTransfer.types.includes('application/x-screenshotmark-variable') || e.dataTransfer.types.includes('application/x-var-index');
     if (!isVariableDrop) {
       return; // Ignora arrastes acidentais de texto da tela ou textarea
     }
 
-    const text = e.dataTransfer.getData('application/x-screenshotmark-variable') || e.dataTransfer.getData('text/plain');
+    const text = e.dataTransfer.getData('application/x-deerprint-variable') || e.dataTransfer.getData('application/x-screenshotmark-variable') || e.dataTransfer.getData('text/plain');
     if (!text || !activeImage.naturalWidth) return;
 
     const pt = getCanvasPoint(e);
@@ -654,9 +628,9 @@ async function loadSettings() {
 
 function updateSettingsUI() {
   const displayHotkey = formatHotkeyDisplay(state.settings.hotkey);
-  headerShortcutBadge.textContent = displayHotkey;
-  emptyShortcutBadge.textContent = displayHotkey;
-  hotkeyValBadge.textContent = displayHotkey;
+  if (headerShortcutBadge) headerShortcutBadge.textContent = displayHotkey;
+  if (emptyShortcutBadge) emptyShortcutBadge.textContent = displayHotkey;
+  if (hotkeyValBadge) hotkeyValBadge.textContent = displayHotkey;
 
   inputSavePath.value = state.settings.saveDirectory;
   footerSavePath.textContent = `Salvo em: ${state.settings.saveDirectory}`;
@@ -669,12 +643,12 @@ function updateSettingsUI() {
   if (toggleAutoupdate) {
     toggleAutoupdate.checked = state.settings.autoCheckUpdates !== false;
   }
+  if (toggleDarkMode) {
+    toggleDarkMode.checked = state.settings.theme !== 'light';
+  }
   
   if (state.settings.theme) {
     applyTheme(state.settings.theme);
-  }
-  if (state.settings.buttonStyle) {
-    applyButtonStyle(state.settings.buttonStyle);
   }
 }
 
@@ -1053,7 +1027,7 @@ function startPanning(e) {
 function updateTextSizeUI(size) {
   size = Math.max(10, Math.min(64, Math.round(size)));
   state.activeFontSize = size;
-  localStorage.setItem('screenshotmark_font_size', size);
+  localStorage.setItem('deerprint_font_size', size);
   if (inputTextSizeSlider) inputTextSizeSlider.value = size;
   if (textSizeValBadge) textSizeValBadge.textContent = `${size}px`;
   if (compactInputTextSize) compactInputTextSize.value = size;
@@ -1094,7 +1068,7 @@ function getBlurLabel(val) {
 function setBlurStrength(val) {
   val = Math.max(1, Math.min(10, isNaN(parseFloat(val)) ? 4.2 : parseFloat(val)));
   state.activeBlurStrength = val;
-  localStorage.setItem('screenshotmark_blur_strength', val);
+  localStorage.setItem('deerprint_blur_strength', val);
   if (inputBlurStrength) inputBlurStrength.value = val;
   const label = getBlurLabel(val);
   if (blurValBadge) blurValBadge.textContent = label;
@@ -1184,7 +1158,7 @@ function setActiveTool(tool) {
 
 function setActiveColor(color) {
   state.activeColor = color;
-  localStorage.setItem('screenshotmark_active_color', color);
+  localStorage.setItem('deerprint_active_color', color);
   if (activeColorSwatch) activeColorSwatch.style.backgroundColor = color;
   if (compactActiveColorDot) compactActiveColorDot.style.backgroundColor = color;
   if (paletteCurrentHex) paletteCurrentHex.textContent = color.toUpperCase();
@@ -1217,7 +1191,7 @@ function setActiveColor(color) {
 function setActiveStrokeWidth(width) {
   width = Math.max(1, Math.min(16, width));
   state.activeStrokeWidth = width;
-  localStorage.setItem('screenshotmark_stroke_width', width);
+  localStorage.setItem('deerprint_stroke_width', width);
 
   if (inputStrokeSlider) inputStrokeSlider.value = width;
   if (strokeValBadge) strokeValBadge.textContent = `${width}px`;
@@ -2494,14 +2468,18 @@ function formatHotkeyDisplay(accelerator) {
 // Event Listeners Setup
 // ==========================================================================
 function setupEventListeners() {
-  btnCaptureNow.addEventListener('click', async () => {
-    await flushAutoSave();
-    window.electronAPI.triggerCapture();
-  });
-  btnEmptyCapture.addEventListener('click', async () => {
-    await flushAutoSave();
-    window.electronAPI.triggerCapture();
-  });
+  if (btnCaptureNow) {
+    btnCaptureNow.addEventListener('click', async () => {
+      await flushAutoSave();
+      window.electronAPI.triggerCapture();
+    });
+  }
+  if (btnEmptyCapture) {
+    btnEmptyCapture.addEventListener('click', async () => {
+      await flushAutoSave();
+      window.electronAPI.triggerCapture();
+    });
+  }
   
   window.addEventListener('beforeunload', () => {
     flushAutoSave();
@@ -2911,25 +2889,14 @@ function setupEventListeners() {
     });
   });
 
-  // Themes Cards Selection
-  themeCards.forEach(card => {
-    card.addEventListener('click', () => {
-      const themeId = card.getAttribute('data-theme');
-      applyTheme(themeId);
-      const name = card.querySelector('.theme-name')?.textContent || themeId;
-      showToast(`Tema "${name}" ativado!`);
+  // Toggle Switch: Modo Escuro / Modo Claro
+  if (toggleDarkMode) {
+    toggleDarkMode.addEventListener('change', () => {
+      const newTheme = toggleDarkMode.checked ? 'dark' : 'light';
+      applyTheme(newTheme);
+      showToast(toggleDarkMode.checked ? '🌙 Modo Escuro ativado!' : '☀️ Modo Claro ativado!');
     });
-  });
-
-  // Button Styles Selection
-  btnStyleCards.forEach(card => {
-    card.addEventListener('click', () => {
-      const styleId = card.getAttribute('data-btn-style');
-      applyButtonStyle(styleId);
-      const name = card.querySelector('.theme-name')?.textContent || styleId;
-      showToast(`Estilo de botão "${name}" ativado!`);
-    });
-  });
+  }
 
   btnBrowseFolder.addEventListener('click', async () => {
     const res = await window.electronAPI.selectSaveDirectory();
@@ -2948,8 +2915,7 @@ function setupEventListeners() {
       autoCopy: toggleAutocopy ? toggleAutocopy.checked : true,
       autoStart: toggleAutostart ? toggleAutostart.checked : true,
       autoCheckUpdates: toggleAutoupdate ? toggleAutoupdate.checked : true,
-      theme: state.settings.theme || 'midnight',
-      buttonStyle: state.settings.buttonStyle || 'flat'
+      theme: (toggleDarkMode && !toggleDarkMode.checked) ? 'light' : 'dark'
     };
 
     const res = await window.electronAPI.saveSettings(updatedSettings);
