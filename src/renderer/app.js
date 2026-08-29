@@ -231,7 +231,7 @@ let state = {
   activeColor: '#ef4444',
   activeStrokeWidth: 4,
   activeFontSize: 16,
-  activeBlurStrength: 16,
+  activeBlurStrength: 4.2,
   annotations: [],
   selectedId: null,
   activeHandle: null, // 'nw', 'n', 'ne', 'e', 'se', 's', 'sw', 'w', 'start', 'end', 'body'
@@ -287,8 +287,8 @@ function loadUserPreferences() {
     const savedFontSize = localStorage.getItem('screenshotmark_font_size') || '16';
     updateTextSizeUI(parseInt(savedFontSize, 10));
 
-    const savedBlur = localStorage.getItem('screenshotmark_blur_strength') || '16';
-    setBlurStrength(parseInt(savedBlur, 10));
+    const savedBlur = localStorage.getItem('screenshotmark_blur_strength') || '4.2';
+    setBlurStrength(parseFloat(savedBlur));
 
     const savedTheme = localStorage.getItem('screenshotmark_theme');
     if (savedTheme) {
@@ -471,6 +471,7 @@ function renderVariablesList() {
       draggedVariableIndex = index;
       e.dataTransfer.setData('text/plain', item);
       e.dataTransfer.setData('application/x-var-index', index.toString());
+      e.dataTransfer.setData('application/x-screenshotmark-variable', item);
       e.dataTransfer.effectAllowed = 'copyMove';
       chip.classList.add('dragging');
 
@@ -593,7 +594,13 @@ function setupVariablesSidebar() {
     e.preventDefault();
     canvasWrapper.classList.remove('drop-target-active');
 
-    const text = e.dataTransfer.getData('text/plain');
+    // Valida se o drop veio exclusivamente da barra lateral de variáveis/palavras
+    const isVariableDrop = e.dataTransfer.types.includes('application/x-screenshotmark-variable') || e.dataTransfer.types.includes('application/x-var-index');
+    if (!isVariableDrop) {
+      return; // Ignora arrastes acidentais de texto da tela ou textarea
+    }
+
+    const text = e.dataTransfer.getData('application/x-screenshotmark-variable') || e.dataTransfer.getData('text/plain');
     if (!text || !activeImage.naturalWidth) return;
 
     const pt = getCanvasPoint(e);
@@ -894,6 +901,10 @@ function setupAnnotationEngine() {
   // Prevent inline text editor events from bubbling to canvas
   inlineTextEditor.addEventListener('mousedown', (e) => e.stopPropagation());
   inlineTextEditor.addEventListener('click', (e) => e.stopPropagation());
+  inlineTextEditor.addEventListener('dragstart', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+  });
 
   // Prevent browser context menu on canvas & viewport to allow right-click drag pan anywhere!
   annotationCanvas.addEventListener('contextmenu', (e) => e.preventDefault());
@@ -1073,17 +1084,27 @@ function adjustSelectedTextSize(delta) {
   }
 }
 
+function getBlurLabel(val) {
+  if (val <= 2.8) return 'Leve';
+  if (val <= 5.5) return 'Suave';
+  if (val <= 8.5) return 'Médio';
+  return 'Forte';
+}
+
 function setBlurStrength(val) {
-  val = Math.max(0, Math.min(40, val));
+  val = Math.max(1, Math.min(10, isNaN(parseFloat(val)) ? 4.2 : parseFloat(val)));
   state.activeBlurStrength = val;
   localStorage.setItem('screenshotmark_blur_strength', val);
   if (inputBlurStrength) inputBlurStrength.value = val;
-  if (blurValBadge) blurValBadge.textContent = `${val}px`;
+  const label = getBlurLabel(val);
+  if (blurValBadge) blurValBadge.textContent = label;
   if (compactInputBlur) compactInputBlur.value = val;
-  if (compactBlurVal) compactBlurVal.textContent = `${val}px`;
+  if (compactBlurVal) compactBlurVal.textContent = label;
 
   blurPresetChips.forEach(chip => {
-    chip.classList.toggle('active', parseInt(chip.getAttribute('data-blur'), 10) === val);
+    const chipBlur = parseFloat(chip.getAttribute('data-blur'));
+    const isCurrent = Math.abs(chipBlur - val) <= 0.8 || (chipBlur === 4.2 && Math.abs(val - 4.2) <= 1.0);
+    chip.classList.toggle('active', isCurrent);
   });
 
   if (state.selectedId) {
@@ -1143,7 +1164,7 @@ function setActiveTool(tool) {
     } else if (tool === 'text') {
       compactActiveToolIcon.innerHTML = `<span style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 14px; font-weight: 800;">T</span>`;
     } else if (tool === 'glass') {
-      compactActiveToolIcon.innerHTML = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"></path></svg>`;
+      compactActiveToolIcon.innerHTML = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="4" ry="4"></rect><line x1="14" y1="3" x2="3" y2="14"></line><line x1="20" y1="9" x2="9" y2="20"></line></svg>`;
     } else if (SHAPE_ICONS[tool]) {
       compactActiveToolIcon.innerHTML = SHAPE_ICONS[tool];
     }
@@ -1286,6 +1307,11 @@ function getCanvasPoint(e) {
 
 // Canvas Mouse Handlers
 function onCanvasMouseDown(e) {
+  // Salva qualquer texto que estava sendo digitado antes de processar o clique
+  if (!inlineTextEditor.classList.contains('hidden')) {
+    commitActiveTextEditor();
+  }
+
   // Right-click (button 2), Middle-click (button 1), Hand Tool or Spacebar = PAN
   if (e.button === 2 || e.button === 1 || state.activeTool === 'hand' || state.isSpacePressed) {
     e.preventDefault();
@@ -1312,41 +1338,31 @@ function onCanvasMouseDown(e) {
     }
   }
 
-  // 2. Check if clicked directly on an existing shape
+  // 2. Check if clicked directly on an existing shape (text, rect, arrow, glass, etc.)
   const clickedShape = getShapeUnderCursor(pt.x, pt.y);
 
   if (clickedShape) {
-    // If text tool and clicked on a text annotation -> open inline editor in-place immediately!
-    if (state.activeTool === 'text' && clickedShape.type === 'text') {
-      state.isDrawing = false;
-      showInlineEditor(clickedShape.x, clickedShape.y, clickedShape);
-      return;
+    // Single click on existing shape -> selects it and prepares for moving/dragging!
+    state.selectedId = clickedShape.id;
+    state.activeHandle = 'body';
+    state.initialShapeState = JSON.parse(JSON.stringify(clickedShape));
+    if (clickedShape.fontSize) {
+      updateTextSizeUI(clickedShape.fontSize);
     }
-
-    // If select tool or already selected -> select and prepare for body dragging
-    if (state.activeTool === 'select' || state.selectedId === clickedShape.id) {
-      state.selectedId = clickedShape.id;
-      state.activeHandle = 'body';
-      state.initialShapeState = JSON.parse(JSON.stringify(clickedShape));
-      if (clickedShape.fontSize) {
-        updateTextSizeUI(clickedShape.fontSize);
-      }
-      if (clickedShape.type === 'glass' && clickedShape.blurAmount !== undefined) {
-        inputBlurStrength.value = clickedShape.blurAmount;
-        blurValBadge.textContent = `${clickedShape.blurAmount}px`;
-        state.activeBlurStrength = clickedShape.blurAmount;
-      }
-      updateContextualToolbar();
-      redrawAnnotations();
-      return;
+    if (clickedShape.type === 'glass' && clickedShape.blurAmount !== undefined) {
+      inputBlurStrength.value = clickedShape.blurAmount;
+      blurValBadge.textContent = `${clickedShape.blurAmount}px`;
+      state.activeBlurStrength = clickedShape.blurAmount;
     }
+    updateContextualToolbar();
+    redrawAnnotations();
+    return;
   }
 
   // 3. Clicked on empty space: clear previous selection if any
   if (state.selectedId) {
     state.selectedId = null;
     state.activeHandle = null;
-    hideInlineEditor();
     updateContextualToolbar();
     redrawAnnotations();
   }
@@ -1616,14 +1632,29 @@ function onCanvasDoubleClick(e) {
   }
 }
 
+let currentTextCommitFn = null;
+
+function commitActiveTextEditor() {
+  if (currentTextCommitFn) {
+    const fn = currentTextCommitFn;
+    currentTextCommitFn = null;
+    fn();
+  }
+}
+
 function showInlineEditor(x, y, existingShape = null) {
+  // Se já havia um editor aberto com texto digitado, comita primeiro para não perder nada
+  commitActiveTextEditor();
+
   state.editingShapeId = existingShape ? existingShape.id : null;
   const fontSize = existingShape ? (existingShape.fontSize || 16) : (state.activeFontSize || 16);
   const color = existingShape ? (existingShape.color || state.activeColor) : state.activeColor;
 
-  inlineTextEditor.style.left = `${Math.round(x)}px`;
-  inlineTextEditor.style.top = `${Math.round(y)}px`;
+  // Alinha a caixa para que a ponta do cursor/letras comece exatamente no ponto clicado (x, y)
+  inlineTextEditor.style.left = `${Math.max(0, Math.round(x) - 3)}px`;
+  inlineTextEditor.style.top = `${Math.max(0, Math.round(y) - 2)}px`;
   inlineTextEditor.style.fontSize = `${fontSize}px`;
+  inlineTextEditor.style.lineHeight = `${fontSize * 1.15}px`;
   inlineTextEditor.style.color = color;
   inlineTextEditor.value = existingShape ? existingShape.text : '';
   inlineTextEditor.classList.remove('hidden');
@@ -1637,8 +1668,8 @@ function showInlineEditor(x, y, existingShape = null) {
   const updateSize = () => {
     const lines = inlineTextEditor.value.split('\n');
     const maxLen = Math.max(...lines.map(l => l.length), 4);
-    inlineTextEditor.style.width = `${Math.max(60, Math.round(maxLen * fontSize * 0.65 + 16))}px`;
-    inlineTextEditor.style.height = `${Math.max(Math.round(fontSize * 1.3), Math.round(lines.length * fontSize * 1.25 + 4))}px`;
+    inlineTextEditor.style.width = `${Math.max(70, Math.round(maxLen * fontSize * 0.65 + 16))}px`;
+    inlineTextEditor.style.height = `${Math.max(Math.round(fontSize * 1.35), Math.round(lines.length * fontSize * 1.25 + 6))}px`;
   };
   updateSize();
   inlineTextEditor.oninput = updateSize;
@@ -1649,6 +1680,7 @@ function showInlineEditor(x, y, existingShape = null) {
   }, 25);
 
   const commitText = () => {
+    currentTextCommitFn = null;
     const text = inlineTextEditor.value.trim();
     state.editingShapeId = null;
     hideInlineEditor();
@@ -1685,12 +1717,14 @@ function showInlineEditor(x, y, existingShape = null) {
     }
   };
 
+  currentTextCommitFn = commitText;
   inlineTextEditor.onblur = commitText;
   inlineTextEditor.onkeydown = (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       commitText();
     } else if (e.key === 'Escape') {
+      currentTextCommitFn = null;
       state.editingShapeId = null;
       hideInlineEditor();
       redrawAnnotations();
@@ -1699,6 +1733,7 @@ function showInlineEditor(x, y, existingShape = null) {
 }
 
 function hideInlineEditor() {
+  currentTextCommitFn = null;
   state.editingShapeId = null;
   inlineTextEditor.classList.add('hidden');
   inlineTextEditor.onblur = null;
@@ -1793,45 +1828,76 @@ function renderShape(ctx, shape) {
   } else if (shape.type === 'callout') {
     drawCallout(ctx, shape);
   } else if (shape.type === 'glass') {
-    // Frosted Glass Effect (Vidro Fosco com distorção / desfoque)
-    const radius = 6;
-    const blur = shape.blurAmount !== undefined ? shape.blurAmount : (state.activeBlurStrength !== undefined ? state.activeBlurStrength : 16);
+    // Frosted Glass Effect (css.glass specification with 16px radius, specular shine & soft shadow)
+    const rawBlur = shape.blurAmount !== undefined ? shape.blurAmount : (state.activeBlurStrength !== undefined ? state.activeBlurStrength : 4.2);
+    const blur = Math.max(1, Math.min(10, isNaN(parseFloat(rawBlur)) ? 4.2 : parseFloat(rawBlur)));
 
-    ctx.save();
-    drawRoundedRect(ctx, shape.x, shape.y, shape.width, shape.height, radius);
-    ctx.clip();
-
-    if (blur > 0) {
-      // 1. Draw blurred underlying image
-      ctx.filter = `blur(${blur}px)`;
-      ctx.drawImage(activeImage, 0, 0, annotationCanvas.width, annotationCanvas.height);
-      ctx.filter = 'none';
-
-      // 2. Frosted glass gradient / noise tint (alpha scales with blur)
-      const alpha = Math.min(0.25, (blur / 40) * 0.25);
-      const glassGrad = ctx.createLinearGradient(shape.x, shape.y, shape.x + shape.width, shape.y + shape.height);
-      glassGrad.addColorStop(0, `rgba(255, 255, 255, ${alpha * 1.3})`);
-      glassGrad.addColorStop(0.5, `rgba(255, 255, 255, ${alpha * 0.4})`);
-      glassGrad.addColorStop(1, `rgba(255, 255, 255, ${alpha * 0.9})`);
-      ctx.fillStyle = glassGrad;
-      ctx.fillRect(shape.x, shape.y, shape.width, shape.height);
-    } else {
-      // 0px blur = crystal clear transparent glass window
-      ctx.drawImage(activeImage, 0, 0, annotationCanvas.width, annotationCanvas.height);
+    const { x, y, width, height } = shape;
+    if (width <= 2 || height <= 2) {
+      ctx.restore();
+      return;
     }
 
-    // 3. Subtle frosted glass border
-    ctx.strokeStyle = blur > 0 ? 'rgba(255, 255, 255, 0.55)' : 'rgba(255, 255, 255, 0.4)';
-    ctx.lineWidth = 1.5;
-    drawRoundedRect(ctx, shape.x, shape.y, shape.width, shape.height, radius);
+    // border-radius: 16px (ajusta proporcionalmente se a caixa for pequena)
+    const radius = Math.min(16, Math.max(3, Math.min(width, height) / 3));
+
+    // 1. Box Shadow: 0 4px 30px rgba(0, 0, 0, 0.10)
+    ctx.save();
+    ctx.shadowColor = 'rgba(0, 0, 0, 0.18)';
+    ctx.shadowBlur = 24;
+    ctx.shadowOffsetX = 0;
+    ctx.shadowOffsetY = 4;
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.01)';
+    drawRoundedRect(ctx, x, y, width, height, radius);
+    ctx.fill();
+    ctx.restore();
+
+    // 2. Clip to Glass Panel Bounds
+    ctx.save();
+    drawRoundedRect(ctx, x, y, width, height, radius);
+    ctx.clip();
+
+    // 3. Optical Refraction + Backdrop Filter Blur (4.2px no modo Suave)
+    const cx = x + width / 2;
+    const cy = y + height / 2;
+    const distortionScale = 1.015; // 1.5% de refração ótica de lente
+
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.scale(distortionScale, distortionScale);
+    ctx.translate(-cx, -cy);
+
+    // backdrop-filter: blur(4.2px)
+    ctx.filter = `blur(${blur}px) saturate(110%)`;
+    ctx.drawImage(activeImage, 0, 0, annotationCanvas.width, annotationCanvas.height);
+    ctx.restore();
+
+    // 4. Background: rgba(255, 255, 255, 0.06)
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.06)';
+    ctx.fillRect(x, y, width, height);
+
+    // 5. Specular Glare / Light Reflection (Reflexo de luz suave 45° no vidro)
+    const glareGrad = ctx.createLinearGradient(x, y, x + width * 0.85, y + height * 0.85);
+    glareGrad.addColorStop(0, 'rgba(255, 255, 255, 0.28)');
+    glareGrad.addColorStop(0.2, 'rgba(255, 255, 255, 0.08)');
+    glareGrad.addColorStop(0.5, 'rgba(255, 255, 255, 0.01)');
+    glareGrad.addColorStop(0.8, 'rgba(255, 255, 255, 0.04)');
+    glareGrad.addColorStop(1, 'rgba(255, 255, 255, 0.14)');
+    ctx.fillStyle = glareGrad;
+    ctx.fillRect(x, y, width, height);
+
+    // 6. Border: 1px solid rgba(255, 255, 255, 0.89)
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.89)';
+    ctx.lineWidth = 1.0;
+    drawRoundedRect(ctx, x + 0.5, y + 0.5, width - 1.0, height - 1.0, radius);
     ctx.stroke();
 
-    // 4. Glass highlight top shine
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.35)';
+    // 7. Top specular edge highlight
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.65)';
     ctx.lineWidth = 1;
     ctx.beginPath();
-    ctx.moveTo(shape.x + 6, shape.y + 3);
-    ctx.lineTo(shape.x + shape.width - 6, shape.y + 3);
+    ctx.moveTo(x + radius, y + 1);
+    ctx.lineTo(x + width - radius, y + 1);
     ctx.stroke();
 
     ctx.restore();
@@ -2247,6 +2313,10 @@ function pointToLineDistance(px, py, x1, y1, x2, y2) {
 
 // Generate Composite High-Res Image (Base Image + Vector Annotations + Frosted Glass Blur)
 async function renderCompositeDataUrl() {
+  if (!inlineTextEditor.classList.contains('hidden')) {
+    commitActiveTextEditor();
+  }
+
   if (!activeImage.naturalWidth || !activeImage.naturalHeight) {
     return activeImage.src;
   }
@@ -2455,10 +2525,12 @@ function setupEventListeners() {
   btnModalOpenFolder.addEventListener('click', () => window.electronAPI.openSaveDirectory());
 
   btnToggleHistory.addEventListener('click', () => {
-    historyDrawer.classList.toggle('hidden');
+    const isCollapsed = historyDrawer.classList.toggle('collapsed');
+    btnToggleHistory.classList.toggle('active', !isCollapsed);
   });
   btnCloseHistory.addEventListener('click', () => {
-    historyDrawer.classList.add('hidden');
+    historyDrawer.classList.add('collapsed');
+    btnToggleHistory.classList.remove('active');
   });
 
   btnZoomIn.addEventListener('click', () => updateZoom(state.zoom + 0.15));

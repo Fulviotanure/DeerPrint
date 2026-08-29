@@ -156,27 +156,29 @@
             </div>
           </div>
 
-          <!-- 4. Vidro Fosco / Desfoque with Floating Intensity Popover -->
+          <!-- 4. Vidro Fosco with Floating Intensity Popover -->
           <div class="glass-picker-wrapper">
             <button id="tool-glass" class="tool-btn" title="Vidro Fosco / Desfoque (G)">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"></path>
+                <rect width="18" height="18" x="3" y="3" rx="4" ry="4"></rect>
+                <line x1="14" y1="3" x2="3" y2="14"></line>
+                <line x1="20" y1="9" x2="9" y2="20"></line>
               </svg>
             </button>
 
             <!-- Glass Blur Floating Popover -->
             <div id="glass-blur-popover" class="glass-blur-popover hidden">
               <div class="popover-header">
-                <span class="popover-title">FORÇA DO DESFOQUE</span>
-                <span id="blur-val-badge" class="stroke-val-badge">16px</span>
+                <span class="popover-title">DESFOQUE DO VIDRO</span>
+                <span id="blur-val-badge" class="stroke-val-badge">Suave</span>
               </div>
               <div class="popover-slider-container">
-                <input type="range" id="input-blur-strength" class="stroke-slider" min="0" max="40" step="1" value="16" title="0px = totalmente transparente, 40px = desfoque forte">
+                <input type="range" id="input-blur-strength" class="stroke-slider" min="1" max="10" step="0.5" value="4.2" title="Desfoque do Vidro">
                 <div class="blur-presets-row">
-                  <button class="blur-preset-chip" data-blur="0">0px</button>
-                  <button class="blur-preset-chip" data-blur="8">Suave</button>
-                  <button class="blur-preset-chip active" data-blur="16">Médio</button>
-                  <button class="blur-preset-chip" data-blur="30">Forte</button>
+                  <button class="blur-preset-chip" data-blur="2.2">Leve</button>
+                  <button class="blur-preset-chip active" data-blur="4.2">Suave</button>
+                  <button class="blur-preset-chip" data-blur="7">Médio</button>
+                  <button class="blur-preset-chip" data-blur="10">Forte</button>
                 </div>
               </div>
             </div>
@@ -315,7 +317,11 @@
                 <span>Texto (T)</span>
               </button>
               <button class="compact-tool-item" data-tool="glass" title="Vidro Fosco / Blur (G)">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"></path></svg>
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect width="18" height="18" x="3" y="3" rx="4" ry="4"></rect>
+                  <line x1="14" y1="3" x2="3" y2="14"></line>
+                  <line x1="20" y1="9" x2="9" y2="20"></line>
+                </svg>
                 <span>Vidro (G)</span>
               </button>
             </div>
@@ -337,9 +343,9 @@
                 <input type="range" id="compact-input-text-size" class="stroke-slider" min="10" max="64" step="1" value="16">
               </div>
               <div class="compact-slider-row">
-                <span class="compact-slider-title">Desfoque:</span>
-                <span id="compact-blur-val" class="compact-val-pill">16px</span>
-                <input type="range" id="compact-input-blur" class="stroke-slider" min="0" max="40" step="1" value="16">
+                <span class="compact-slider-title">Desfoque do Vidro:</span>
+                <span id="compact-blur-val" class="compact-val-pill">Suave</span>
+                <input type="range" id="compact-input-blur" class="stroke-slider" min="1" max="10" step="0.5" value="4.2">
               </div>
             </div>
 
@@ -412,8 +418,8 @@
         <button id="btn-open-help" class="btn-icon" title="Instruções de Uso e Guia de Atalhos (?)">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
             <circle cx="12" cy="12" r="10"></circle>
-            <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
-            <circle cx="12" cy="17" r="0.8" fill="currentColor"></circle>
+            <path d="M9.5 9a2.5 2.5 0 0 1 5 0c0 1.5-2.5 2-2.5 3.5"></path>
+            <circle cx="12" cy="16.5" r="1" fill="currentColor" stroke="none"></circle>
           </svg>
         </button>
 
@@ -503,7 +509,7 @@
         <div id="canvas-wrapper" class="canvas-wrapper hidden">
           <img id="active-image" alt="Captura ativa" draggable="false">
           <canvas id="annotation-canvas" class="annotation-canvas"></canvas>
-          <textarea id="inline-text-editor" class="inline-text-editor hidden" rows="1" placeholder="Digite o texto..."></textarea>
+          <textarea id="inline-text-editor" class="inline-text-editor hidden" rows="1" placeholder="Digite o texto..." draggable="false"></textarea>
         </div>
 
         <!-- Floating Zoom & Fit Controls -->
@@ -524,7 +530,7 @@
       </div>
 
       <!-- History Drawer (Slide-over) -->
-      <aside id="history-drawer" class="history-drawer hidden">
+      <aside id="history-drawer" class="history-drawer collapsed">
         <div class="drawer-header">
           <div class="drawer-title">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -818,6 +824,69 @@
                     <p class="theme-desc">Visual claro e minimalista para trabalho com máxima iluminação.</p>
                   </div>
                 </div>
+
+                <!-- 6. Industrial Rust & Aqua (Brutalist) -->
+                <div class="theme-card" data-theme="industrial">
+                  <div class="theme-preview-box preview-industrial">
+                    <div class="theme-preview-header">
+                      <div class="tp-dot"></div>
+                      <div class="tp-bar"></div>
+                    </div>
+                    <div class="theme-preview-content">
+                      <div class="tp-card"></div>
+                      <div class="tp-accent"></div>
+                    </div>
+                  </div>
+                  <div class="theme-info">
+                    <div class="theme-title-row">
+                      <span class="theme-name">🏷️ Iron & Rust</span>
+                      <span class="theme-tag">Brutalist</span>
+                    </div>
+                    <p class="theme-desc">Ardósia Iron Core, acentos em Rust Signal e Industrial Aqua.</p>
+                  </div>
+                </div>
+
+                <!-- 7. Retro Web 90s -->
+                <div class="theme-card" data-theme="retroweb">
+                  <div class="theme-preview-box preview-retroweb">
+                    <div class="theme-preview-header">
+                      <div class="tp-dot"></div>
+                      <div class="tp-bar"></div>
+                    </div>
+                    <div class="theme-preview-content">
+                      <div class="tp-card"></div>
+                      <div class="tp-accent"></div>
+                    </div>
+                  </div>
+                  <div class="theme-info">
+                    <div class="theme-title-row">
+                      <span class="theme-name">👾 Retro Web 90s</span>
+                      <span class="theme-tag">Arcade</span>
+                    </div>
+                    <p class="theme-desc">Nostalgia dos anos 90 com Netscape Indigo, CRT Cream e acentos arcade.</p>
+                  </div>
+                </div>
+
+                <!-- 8. Architectural Cream -->
+                <div class="theme-card" data-theme="tactilecream">
+                  <div class="theme-preview-box preview-tactilecream">
+                    <div class="theme-preview-header">
+                      <div class="tp-dot"></div>
+                      <div class="tp-bar"></div>
+                    </div>
+                    <div class="theme-preview-content">
+                      <div class="tp-card"></div>
+                      <div class="tp-accent"></div>
+                    </div>
+                  </div>
+                  <div class="theme-info">
+                    <div class="theme-title-row">
+                      <span class="theme-name">📜 Architectural Cream</span>
+                      <span class="theme-tag">Editorial</span>
+                    </div>
+                    <p class="theme-desc">Papel creme técnico suave, detalhes em terracota e tinta Iron Ink.</p>
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -905,7 +974,7 @@
                   </div>
                   <div>
                     <div class="update-app-title">ScreenshotMark</div>
-                    <div class="update-app-version">Versão instalada: <span id="span-current-app-version" class="version-pill">v2.0.4</span></div>
+                    <div class="update-app-version">Versão instalada: <span id="span-current-app-version" class="version-pill">v2.1.0</span></div>
                   </div>
                 </div>
 
@@ -993,10 +1062,10 @@
         <div class="modal-header">
           <div class="modal-title-group">
             <div class="modal-icon">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                 <circle cx="12" cy="12" r="10"></circle>
-                <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
-                <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                <path d="M9.5 9a2.5 2.5 0 0 1 5 0c0 1.5-2.5 2-2.5 3.5"></path>
+                <circle cx="12" cy="16.5" r="1.1" fill="currentColor" stroke="none"></circle>
               </svg>
             </div>
             <h2>Instruções de Uso & Guia Rápido</h2>
@@ -1014,38 +1083,58 @@
                 <span class="help-step-icon">📸</span>
                 <h3>Como Capturar a Tela</h3>
               </div>
-              <p>Pressione a tecla de atalho (<kbd class="shortcut-pill">F10</kbd> ou <kbd class="shortcut-pill">PrintScreen</kbd>) ou clique em <strong>Capturar</strong> no topo.</p>
-              <p>Arraste o cursor sobre a área desejada da tela. O print será aberto no editor e copiado imediatamente para o <kbd class="shortcut-pill">Ctrl+V</kbd>.</p>
+              <p>Pressione a tecla de atalho configurada (<kbd class="shortcut-pill">PrintScreen</kbd>) ou clique em <strong>Capturar</strong> no topo.</p>
+              <p>Arraste o cursor sobre a área desejada da tela. O print será aberto no editor e copiado imediatamente para a área de transferência (<kbd class="shortcut-pill">Ctrl+V</kbd>).</p>
             </div>
 
-            <!-- Card 2: Palavras / Tags -->
+            <!-- Card 2: Palavras / Tags & Texto -->
             <div class="help-card">
               <div class="help-card-header">
                 <span class="help-step-icon">🏷️</span>
-                <h3>Inserir Palavras & Tags</h3>
+                <h3>Palavras, Tags & Texto Livre</h3>
               </div>
-              <p>Na barra lateral esquerda <strong>Palavras / Tags</strong>, clique e <strong>arraste</strong> qualquer palavra para cima da imagem para posicioná-la.</p>
-              <p>Dê <strong>dois cliques</strong> em qualquer tag na imagem para editar o texto ou use o campo de adicionar para criar novas tags personalizadas.</p>
+              <p>Arraste palavras da barra lateral esquerda diretamente para a imagem, ou use a ferramenta <strong>Texto (T)</strong> clicando exatamente onde deseja escrever.</p>
+              <p>Dê <strong>dois cliques</strong> em qualquer texto para editar, ou clique e arraste para movê-lo. Ao clicar fora, o texto é salvo automaticamente.</p>
             </div>
 
-            <!-- Card 3: Setas & Anotações -->
+            <!-- Card 3: Setas & Formas -->
             <div class="help-card">
               <div class="help-card-header">
                 <span class="help-step-icon">🏹</span>
                 <h3>Desenhar Setas e Formas</h3>
               </div>
-              <p>Selecione a ferramenta <strong>Seta (A)</strong> ou <strong>Retângulo (R)</strong> e desenhe livremente.</p>
-              <p>Você pode puxar setas <strong>diretamente de cima de palavras ou retângulos</strong> sem que eles sejam selecionados ou movidos!</p>
+              <p>Selecione <strong>Retângulo (R)</strong>, <strong>Arredondado (U)</strong>, <strong>Círculo (C)</strong>, <strong>Seta (A)</strong>, <strong>Seta Dupla (D)</strong> ou <strong>Passos Numerados (N)</strong>.</p>
+              <p>Você pode personalizar a cor na paleta de 32 cores e a espessura do traço de 1 a 16px.</p>
             </div>
 
             <!-- Card 4: Vidro Fosco & Desfoque -->
             <div class="help-card">
               <div class="help-card-header">
-                <span class="help-step-icon">🔍</span>
-                <h3>Desfoque / Vidro Fosco</h3>
+                <span class="help-step-icon">🪟</span>
+                <h3>Desfoque do Vidro (Glass)</h3>
               </div>
-              <p>Use a ferramenta <strong>Vidro Fosco (G)</strong> para desenhar caixas sobre dados confidenciais (senhas, CPF, valores sensíveis).</p>
-              <p>Ajuste a intensidade do desfoque no controle deslizante conforme sua necessidade.</p>
+              <p>Use a ferramenta <strong>Vidro (G)</strong> para ocultar informações confidenciais (senhas, CPF, nomes e valores sensíveis).</p>
+              <p>Escolha entre os níveis <strong>Leve</strong>, <strong>Suave</strong> (efeito de vidro translúcido com borda suave e sombra 3D), <strong>Médio</strong> ou <strong>Forte</strong>.</p>
+            </div>
+
+            <!-- Card 5: Navegação & Zoom -->
+            <div class="help-card">
+              <div class="help-card-header">
+                <span class="help-step-icon">🔍</span>
+                <h3>Navegação & Zoom Infinito</h3>
+              </div>
+              <p>Segure a tecla <strong>Espaço</strong> ou pressione o <strong>Botão Direito do Mouse</strong> para arrastar a tela livremente (Pan).</p>
+              <p>Use os controles no canto inferior direito para aplicar zoom de até 800% ou ajustar à tela.</p>
+            </div>
+
+            <!-- Card 6: Salvar & Copiar -->
+            <div class="help-card">
+              <div class="help-card-header">
+                <span class="help-step-icon">💾</span>
+                <h3>Salvar e Exportar</h3>
+              </div>
+              <p>Pressione <kbd class="shortcut-pill">Ctrl + C</kbd> para copiar a imagem final com todas as anotações em alta resolução.</p>
+              <p>Use <kbd class="shortcut-pill">Ctrl + S</kbd> para salvar o arquivo na pasta de sua preferência.</p>
             </div>
           </div>
 
@@ -1053,8 +1142,8 @@
           <div class="help-shortcuts-section">
             <h3 class="help-section-title">⌨️ Atalhos Rápidos do Teclado</h3>
             <div class="shortcuts-table-grid">
-              <div class="shortcut-row"><kbd>F10 / PrintScreen</kbd><span>Capturar nova área da tela</span></div>
-              <div class="shortcut-row"><kbd>V</kbd><span>Selecionar e Ajustar Elementos</span></div>
+              <div class="shortcut-row"><kbd>PrintScreen</kbd><span>Capturar nova área da tela</span></div>
+              <div class="shortcut-row"><kbd>V</kbd><span>Selecionar e Mover Elementos</span></div>
               <div class="shortcut-row"><kbd>R</kbd><span>Retângulo Vazado</span></div>
               <div class="shortcut-row"><kbd>U</kbd><span>Retângulo Arredondado</span></div>
               <div class="shortcut-row"><kbd>C</kbd><span>Círculo / Elipse</span></div>
@@ -1062,13 +1151,13 @@
               <div class="shortcut-row"><kbd>D</kbd><span>Seta Dupla Bidirecional</span></div>
               <div class="shortcut-row"><kbd>L</kbd><span>Linha Reta</span></div>
               <div class="shortcut-row"><kbd>N</kbd><span>Passos Numerados (1, 2, 3...)</span></div>
-              <div class="shortcut-row"><kbd>B</kbd><span>Balão de Fala / Chamada</span></div>
+              <div class="shortcut-row"><kbd>B</kbd><span>Balão de Chamada</span></div>
               <div class="shortcut-row"><kbd>P</kbd><span>Pincel Livre</span></div>
               <div class="shortcut-row"><kbd>H</kbd><span>Marca-Texto</span></div>
               <div class="shortcut-row"><kbd>T</kbd><span>Texto Livre</span></div>
-              <div class="shortcut-row"><kbd>G</kbd><span>Vidro Fosco / Desfoque (Blur)</span></div>
+              <div class="shortcut-row"><kbd>G</kbd><span>Desfoque do Vidro (Glass)</span></div>
               <div class="shortcut-row"><kbd>Ctrl + C</kbd><span>Copiar print com anotações</span></div>
-              <div class="shortcut-row"><kbd>Ctrl + S</kbd><span>Salvar imagem em nova pasta</span></div>
+              <div class="shortcut-row"><kbd>Ctrl + S</kbd><span>Salvar imagem no computador</span></div>
               <div class="shortcut-row"><kbd>Ctrl + Z / Y</kbd><span>Desfazer / Refazer anotação</span></div>
               <div class="shortcut-row"><kbd>Delete / Backspace</kbd><span>Excluir objeto selecionado</span></div>
             </div>
