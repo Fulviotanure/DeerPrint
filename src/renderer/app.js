@@ -19,6 +19,7 @@ const headerShortcutBadge = document.getElementById('header-shortcut-badge');
 const emptyShortcutBadge = document.getElementById('empty-shortcut-badge');
 const historyCountBadge = document.getElementById('history-count-badge');
 const footerSavePath = document.getElementById('footer-save-path');
+const footerShortcutBadge = document.getElementById('footer-shortcut-badge');
 const statusText = document.getElementById('status-text');
 
 // Workspace & Canvas
@@ -208,7 +209,7 @@ const btnConfirmUninstall = document.getElementById('btn-confirm-uninstall');
 let state = {
   currentScreenshot: null,
   settings: {
-    hotkey: 'PrintScreen',
+    hotkey: 'F10',
     saveDirectory: '',
     autoCopy: true,
     theme: 'dark'
@@ -631,6 +632,7 @@ function updateSettingsUI() {
   if (headerShortcutBadge) headerShortcutBadge.textContent = displayHotkey;
   if (emptyShortcutBadge) emptyShortcutBadge.textContent = displayHotkey;
   if (hotkeyValBadge) hotkeyValBadge.textContent = displayHotkey;
+  if (footerShortcutBadge) footerShortcutBadge.textContent = displayHotkey;
 
   inputSavePath.value = state.settings.saveDirectory;
   footerSavePath.textContent = `Salvo em: ${state.settings.saveDirectory}`;
@@ -1279,6 +1281,24 @@ function getCanvasPoint(e) {
   };
 }
 
+function isToolMatchingObject(activeTool, objectType) {
+  if (!activeTool || !objectType) return false;
+  if (activeTool === 'select') return true;
+  if (activeTool === objectType) return true;
+
+  // Equivalências de grupos de formas
+  const RECT_TYPES = ['rect', 'rounded-rect', 'rect-fill'];
+  if (RECT_TYPES.includes(activeTool) && RECT_TYPES.includes(objectType)) return true;
+
+  const CIRCLE_TYPES = ['circle', 'circle-fill'];
+  if (CIRCLE_TYPES.includes(activeTool) && CIRCLE_TYPES.includes(objectType)) return true;
+
+  const ARROW_TYPES = ['arrow', 'double-arrow', 'line'];
+  if (ARROW_TYPES.includes(activeTool) && ARROW_TYPES.includes(objectType)) return true;
+
+  return false;
+}
+
 // Canvas Mouse Handlers
 function onCanvasMouseDown(e) {
   // Salva qualquer texto que estava sendo digitado antes de processar o clique
@@ -1299,24 +1319,31 @@ function onCanvasMouseDown(e) {
   state.dragStartPos = pt;
   state.isDrawing = true;
 
-  // 1. If there is a selected shape, check if clicking on one of its resize handles (active in any tool!)
+  // 1. Se já há uma forma selecionada, só processa alças de redimensionamento/movimento se a ferramenta ativa coincidir com o tipo da forma
   if (state.selectedId) {
     const selected = state.annotations.find(a => a.id === state.selectedId);
-    if (selected) {
+    if (selected && isToolMatchingObject(state.activeTool, selected.type)) {
       const handle = getHandleUnderCursor(pt.x, pt.y, selected);
       if (handle) {
         state.activeHandle = handle;
         state.initialShapeState = JSON.parse(JSON.stringify(selected));
         return;
       }
+    } else if (state.selectedId && state.activeTool !== 'select') {
+      // Se o usuário selecionou outra ferramenta (ex: seta), desseleciona para desenhar livremente a partir de qualquer ponto
+      state.selectedId = null;
+      state.activeHandle = null;
+      updateContextualToolbar();
+      redrawAnnotations();
     }
   }
 
-  // 2. Check if clicked directly on an existing shape (text, rect, arrow, glass, etc.)
+  // 2. Verifica se clicou sobre uma forma existente
+  // REGRA: Só seleciona e move se a ferramenta ativa for 'select' ou a própria ferramenta daquela forma!
   const clickedShape = getShapeUnderCursor(pt.x, pt.y);
 
-  if (clickedShape) {
-    // Single click on existing shape -> selects it and prepares for moving/dragging!
+  if (clickedShape && isToolMatchingObject(state.activeTool, clickedShape.type)) {
+    // Clique sobre forma com a mesma ferramenta ou ferramenta select -> seleciona e prepara para mover/arrastar!
     state.selectedId = clickedShape.id;
     state.activeHandle = 'body';
     state.initialShapeState = JSON.parse(JSON.stringify(clickedShape));
@@ -1333,7 +1360,7 @@ function onCanvasMouseDown(e) {
     return;
   }
 
-  // 3. Clicked on empty space: clear previous selection if any
+  // 3. Se clicou com uma ferramenta diferente ou no espaço vazio: limpa seleção anterior
   if (state.selectedId) {
     state.selectedId = null;
     state.activeHandle = null;
@@ -1341,7 +1368,7 @@ function onCanvasMouseDown(e) {
     redrawAnnotations();
   }
 
-  // If active tool is 'select' and clicked empty space, do nothing further
+  // Se a ferramenta ativa for 'select' e clicou no vazio, não inicia desenho
   if (state.activeTool === 'select') {
     return;
   }
@@ -1434,7 +1461,7 @@ function onCanvasMouseMove(e) {
     const pt = getCanvasPoint(e);
     if (state.selectedId) {
       const selected = state.annotations.find(a => a.id === state.selectedId);
-      if (selected) {
+      if (selected && isToolMatchingObject(state.activeTool, selected.type)) {
         const handle = getHandleUnderCursor(pt.x, pt.y, selected);
         if (handle) {
           updateCursorForHandle(handle);
@@ -1444,20 +1471,23 @@ function onCanvasMouseMove(e) {
     }
 
     const shapeHover = getShapeUnderCursor(pt.x, pt.y);
-    if (shapeHover && (state.activeTool === 'select' || (state.activeTool === 'text' && shapeHover.type === 'text') || state.selectedId === shapeHover.id)) {
-      annotationCanvas.style.cursor = 'move';
-    } else {
-      if (state.activeTool === 'select') {
-        annotationCanvas.style.cursor = 'default';
-      } else if (state.activeTool === 'hand') {
-        annotationCanvas.style.cursor = 'grab';
-      } else if (state.activeTool === 'text') {
-        annotationCanvas.style.cursor = 'text';
-      } else if (state.activeTool === 'step') {
-        annotationCanvas.style.cursor = 'pointer';
-      } else {
-        annotationCanvas.style.cursor = 'crosshair';
+    if (shapeHover && isToolMatchingObject(state.activeTool, shapeHover.type)) {
+      if (state.activeTool === 'select' || state.selectedId === shapeHover.id) {
+        annotationCanvas.style.cursor = 'move';
+        return;
       }
+    }
+
+    if (state.activeTool === 'select') {
+      annotationCanvas.style.cursor = 'default';
+    } else if (state.activeTool === 'hand') {
+      annotationCanvas.style.cursor = 'grab';
+    } else if (state.activeTool === 'text') {
+      annotationCanvas.style.cursor = 'text';
+    } else if (state.activeTool === 'step') {
+      annotationCanvas.style.cursor = 'pointer';
+    } else {
+      annotationCanvas.style.cursor = 'crosshair';
     }
     return;
   }
@@ -1730,9 +1760,9 @@ function redrawAnnotations() {
     renderShape(ctx, state.currentDraft);
   }
 
-  if (state.selectedId && state.activeTool === 'select') {
+  if (state.selectedId) {
     const selected = state.annotations.find(a => a.id === state.selectedId);
-    if (selected) {
+    if (selected && (state.activeTool === 'select' || isToolMatchingObject(state.activeTool, selected.type))) {
       renderSelectionOutlineAndHandles(ctx, selected);
     }
   }
@@ -2099,11 +2129,11 @@ const BOX_SHAPE_TYPES = ['rect', 'rounded-rect', 'rect-fill', 'circle', 'circle-
 
 function renderSelectionOutlineAndHandles(ctx, shape) {
   ctx.save();
-  ctx.strokeStyle = '#38bdf8';
-  ctx.lineWidth = 1;
+  ctx.strokeStyle = '#d4e9c2';
+  ctx.lineWidth = 1.2;
   ctx.setLineDash([3, 3]);
 
-  const handleRadius = 2.8; // Pontos de modificação bem menores e discretos!
+  const handleRadius = 3; // Pontos de modificação discretos e elegantes
 
   if (BOX_SHAPE_TYPES.includes(shape.type)) {
     ctx.strokeRect(shape.x - 1, shape.y - 1, shape.width + 2, shape.height + 2);
@@ -2112,8 +2142,8 @@ function renderSelectionOutlineAndHandles(ctx, shape) {
     const handles = getRectHandles(shape);
     Object.values(handles).forEach(h => {
       ctx.fillStyle = '#ffffff';
-      ctx.strokeStyle = '#0284c7';
-      ctx.lineWidth = 1.2;
+      ctx.strokeStyle = '#394b2e';
+      ctx.lineWidth = 1.4;
       ctx.beginPath();
       ctx.arc(h.x, h.y, handleRadius, 0, Math.PI * 2);
       ctx.fill();
@@ -2133,8 +2163,8 @@ function renderSelectionOutlineAndHandles(ctx, shape) {
     ];
     pts.forEach(h => {
       ctx.fillStyle = '#ffffff';
-      ctx.strokeStyle = '#0284c7';
-      ctx.lineWidth = 1.2;
+      ctx.strokeStyle = '#394b2e';
+      ctx.lineWidth = 1.4;
       ctx.beginPath();
       ctx.arc(h.x, h.y, handleRadius, 0, Math.PI * 2);
       ctx.fill();

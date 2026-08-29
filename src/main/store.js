@@ -12,7 +12,7 @@ class Store {
     const defaultPicturesDir = path.join(app.getPath('pictures'), 'DeerPrint');
     
     this.defaultSettings = {
-      hotkey: 'PrintScreen', // Default trigger key (supports PrintScreen, F10, Ctrl+Shift+S, etc.)
+      hotkey: 'F10', // Default trigger key (supports F10, PrintScreen, Ctrl+Shift+S, etc.)
       saveDirectory: defaultPicturesDir,
       autoCopy: true,
       autoStart: true,

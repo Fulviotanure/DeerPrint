@@ -4,6 +4,16 @@ Todas as mudanças e lançamentos notáveis do **DeerPrint** são documentados n
 
 ---
 
+## [3.0.4] - 2026-08-29
+### 🎯 Precisão de Desenho, F10 Padrão & Refinamentos Visuais
+- **Regra de Não-Interferência ao Desenhar**: Clicar sobre formas existentes (como retângulos, textos ou desfoques) enquanto uma ferramenta ativa estiver selecionada (como seta, linha, caneta ou retângulo) agora inicia o desenho a partir daquele ponto exato sem mover nem selecionar indevidamente o objeto de baixo.
+- **Interação Exclusiva por Ferramenta**: O redimensionamento e movimento de anotações só ocorre quando a ferramenta de **Seleção (Cursor)** estiver ativa ou quando a ferramenta ativa for exatamente do mesmo tipo da forma.
+- **Atalho Padrão F10**: Tecla de disparo padrão de novas capturas atualizada para **F10** (com suporte contínuo a personalização e atalhos rápidos).
+- **Indicador de Atalho no Rodapé**: Adicionado badge dinâmico no rodapé da janela exibindo a tecla configurada para disparar prints.
+- **Botão "Remover da Tela" Material Design 3**: Botão redesenhado com cantos arredondados, elevação sutil e paleta **Vermelho Pastel** (Coral suave `#ffb4ab` sobre superfície escura acolhedora).
+- **Nome da Aparência Atualizado**: Atualizado de "Obsidian Studio" para **"🌙 Modo Escuro (Sylvan Core Dark)"** e **"☀️ Modo Claro (Alpine Mist)"**.
+- **Alças de Redimensionamento Harmonizadas**: Linhas tracejadas e alças de ajuste atualizadas para o padrão *Pale Moss* e *Forest Green*.
+
 ## [3.0.3] - 2026-08-29
 ### 🌿 Harmonização Visual Sylvan Core no Painel de Atualizações
 - **Remoção de Tons Azuis Legados**: Substituição de todos os contornos e fundos azuis do painel de atualizações pela paleta oficial Sylvan Core (Midnight Forest `#181b18`, Pale Moss `#d4e9c2` e Forest Green `#394b2e`).

@@ -567,28 +567,76 @@ h1, h2, h3, h4,
   border-color: var(--accent-cyan);
 }
 
-/* Soft Danger Button (Remover da Tela) */
-.btn-danger-soft {
-  background: rgba(239, 68, 68, 0.12) !important;
-  color: #f87171 !important;
-  border: 1px solid rgba(239, 68, 68, 0.3) !important;
+/* Soft Pastel Red Button (Remover da Tela) - Square Standard */
+.btn-danger-soft,
+#btn-close-active-image {
+  background: #3b2020 !important;
+  color: #ffb4ab !important;
+  border: 1px solid rgba(255, 180, 171, 0.28) !important;
   padding: 8px 14px !important;
-  border-radius: var(--btn-radius, 8px) !important;
-  display: inline-flex !important;
-  align-items: center !important;
-  gap: 8px !important;
-  font-size: 13px !important;
-  font-weight: 600 !important;
-  cursor: pointer !important;
-  flex-shrink: 0 !important;
-  transition: all 0.18s ease !important;
+  border-radius: 0px !important;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  flex-shrink: 0;
+  box-shadow: var(--md-elevation-1);
+  transition: all 0.2s var(--md-motion-standard, cubic-bezier(0.2, 0, 0, 1));
 }
 
-.btn-danger-soft:hover {
-  background: rgba(239, 68, 68, 0.25) !important;
-  border-color: #ef4444 !important;
+#btn-close-active-image.hidden,
+.btn-danger-soft.hidden {
+  display: none !important;
+}
+
+.btn-danger-soft svg,
+#btn-close-active-image svg {
+  color: #ffb4ab !important;
+  stroke: #ffb4ab !important;
+  flex-shrink: 0;
+}
+
+.btn-danger-soft:hover,
+#btn-close-active-image:hover {
+  background: #4e2929 !important;
   color: #ffffff !important;
+  border-color: rgba(255, 180, 171, 0.6) !important;
+  box-shadow: var(--md-elevation-2);
   transform: translateY(-1px);
+}
+
+.btn-danger-soft:hover svg,
+#btn-close-active-image:hover svg {
+  color: #ffffff !important;
+  stroke: #ffffff !important;
+}
+
+.btn-danger-soft:active,
+#btn-close-active-image:active {
+  background: #2d1818 !important;
+  transform: translateY(0);
+}
+
+[data-theme="light"] .btn-danger-soft,
+[data-theme="light"] #btn-close-active-image {
+  background: #ffdad6 !important;
+  color: #93000a !important;
+  border: 1px solid rgba(147, 0, 10, 0.2) !important;
+}
+
+[data-theme="light"] .btn-danger-soft svg,
+[data-theme="light"] #btn-close-active-image svg {
+  color: #93000a !important;
+  stroke: #93000a !important;
+}
+
+[data-theme="light"] .btn-danger-soft:hover,
+[data-theme="light"] #btn-close-active-image:hover {
+  background: #ffcdd2 !important;
+  color: #410002 !important;
+  border-color: #93000a !important;
 }
 
 /* Outline Button */
@@ -2137,8 +2185,46 @@ h1, h2, h3, h4,
   font-weight: 600;
 }
 
-.meta-separator {
+.meta-separator,
+.footer-separator {
   color: var(--border-subtle);
+  font-size: 11px;
+}
+
+.footer-hotkey-badge-container {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-subtle);
+  padding: 2px 8px;
+  border-radius: 4px;
+  color: var(--text-secondary);
+  font-size: 11px;
+  font-weight: 500;
+  transition: all 0.18s ease;
+}
+
+.footer-hotkey-badge-container:hover {
+  border-color: var(--border-active);
+  color: var(--text-primary);
+  background: var(--bg-tertiary);
+}
+
+.footer-hotkey-label {
+  color: var(--text-muted);
+  font-size: 10.5px;
+  font-weight: 600;
+}
+
+.footer-hotkey-badge-container .shortcut-pill {
+  background: rgba(184, 205, 167, 0.15);
+  color: var(--md-sys-color-primary, #b8cda7);
+  border: 1px solid rgba(184, 205, 167, 0.35);
+  padding: 1px 6px;
+  font-size: 10.5px;
+  font-weight: 700;
+  font-family: 'JetBrains Mono', monospace;
 }
 
 .footer-path-hint {

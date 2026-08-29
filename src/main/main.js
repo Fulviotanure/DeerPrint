@@ -163,7 +163,7 @@ if (!isPrimaryInstance) {
   function updateTrayMenu() {
     if (!tray || tray.isDestroyed()) return;
 
-    const currentHotkey = store ? (store.getSettings().hotkey || 'PrintScreen') : 'PrintScreen';
+    const currentHotkey = store ? (store.getSettings().hotkey || 'F10') : 'F10';
     const isAutoStart = store ? (store.getSettings().autoStart !== false) : true;
 
     const contextMenu = Menu.buildFromTemplate([
@@ -373,8 +373,8 @@ if (!isPrimaryInstance) {
       createMainWindow(true);
     }
 
-    // Registra atalho configurado
-    const currentHotkey = store.getSettings().hotkey || 'PrintScreen';
+    // Registra atalho configurado (padrão: F10)
+    const currentHotkey = store.getSettings().hotkey || 'F10';
     const regResult = registerGlobalShortcut(currentHotkey);
     if (!regResult.success) {
       registerGlobalShortcut('F10');
