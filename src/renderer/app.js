@@ -3028,7 +3028,7 @@ async function setupAutoUpdaterUI() {
   // Botão manual de verificar atualizações
   if (btnCheckUpdates) {
     btnCheckUpdates.addEventListener('click', async () => {
-      handleUpdaterStatus({ status: 'checking', message: 'Buscando atualizações no GitHub...' });
+      handleUpdaterStatus({ status: 'checking', message: 'Buscando atualizações...' });
       await window.electronAPI.checkForUpdates();
     });
   }
@@ -3079,7 +3079,7 @@ function handleUpdaterStatus(statusObj) {
     if (checkUpdatesText) checkUpdatesText.textContent = 'Verificando...';
     if (btnCheckUpdates) btnCheckUpdates.disabled = true;
     if (updateStatusTitle) updateStatusTitle.textContent = 'Buscando atualizações...';
-    if (updateStatusDesc) updateStatusDesc.textContent = 'Consultando os lançamentos oficiais no GitHub Releases.';
+    if (updateStatusDesc) updateStatusDesc.textContent = 'Verificando se há novas versões disponíveis...';
     if (updateProgressContainer) updateProgressContainer.classList.add('hidden');
     if (updateReleaseNotes) updateReleaseNotes.classList.add('hidden');
   } else if (status === 'available') {
@@ -3144,7 +3144,7 @@ function handleUpdaterStatus(statusObj) {
     if (updateProgressContainer) updateProgressContainer.classList.add('hidden');
     if (updateReleaseNotes) updateReleaseNotes.classList.add('hidden');
     if (updateStatusTitle) updateStatusTitle.textContent = 'Você já está na versão mais recente!';
-    if (updateStatusDesc) updateStatusDesc.textContent = message || 'Não há atualizações pendentes no GitHub Releases.';
+    if (updateStatusDesc) updateStatusDesc.textContent = message || 'Não há atualizações pendentes no momento.';
   } else if (status === 'error') {
     if (updateStatusBox) updateStatusBox.className = 'update-status-box status-error';
     if (iconCheckUpdates) iconCheckUpdates.classList.remove('spinning');

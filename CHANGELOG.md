@@ -4,6 +4,14 @@ Todas as mudanças e lançamentos notáveis do **DeerPrint** são documentados n
 
 ---
 
+## [3.0.5] - 2026-08-29
+### 🌿 Harmonização Visual do Balão de Notificação & Limpeza da Aba de Atualizações
+- **Redesign Sylvan Core do Balão de Notificação**: Substituição de todos os contornos e fundos azul-ciano do balão flutuante (`global-update-banner`) pelo design oficial *Midnight Forest* (`#181b18`) e *Pale Moss* (`#d4e9c2`).
+- **Botão Reiniciar Padronizado**: Substituído o botão branco com emoji pelo botão primário oficial Sylvan Core com ícone SVG de reinicialização e tipografia refinada.
+- **Remoção do Banner de Aviso Radical**: Limpeza da aba de atualizações, removendo a caixa de texto de transição de marca para um visual limpo e minimalista.
+- **Mensagens de Status Simplificadas**: Mensagens de verificação diretas ("Buscando atualizações..." e "Verificando se há novas versões disponíveis...").
+- **Badges e Ícones Orgânicos**: Ícone de download e tag "NOVA ATUALIZAÇÃO" reestilizados em tons suaves de verde musgo.
+
 ## [3.0.4] - 2026-08-29
 ### 🎯 Precisão de Desenho, F10 Padrão & Refinamentos Visuais
 - **Regra de Não-Interferência ao Desenhar**: Clicar sobre formas existentes (como retângulos, textos ou desfoques) enquanto uma ferramenta ativa estiver selecionada (como seta, linha, caneta ou retângulo) agora inicia o desenho a partir daquele ponto exato sem mover nem selecionar indevidamente o objeto de baixo.
