@@ -4,6 +4,11 @@ Todas as mudanças e lançamentos notáveis do **DeerPrint** são documentados n
 
 ---
 
+## [3.0.2] - 2026-08-29
+### 🎨 Novo Logotipo & Ícone de Alto Contraste
+- **Novo Emblema Oficial Sylvan**: Aplicação do novo logotipo com badge sólido verde floresta, cantos de recorte brancos nítidos e cervo imponente em destaque.
+- **Ícones Renovados para Desktop**: Geração de `icon.ico`, `icon.png` e `tray-icon.png` com contraste aprimorado para máxima visibilidade na Área de Trabalho e barra de tarefas do Windows.
+
 ## [3.0.1] - 2026-08-29
 ### 🧹 Desinstalação Automática da Versão Legada (ScreenshotMark)
 - **Desinstalação Silenciosa do ScreenshotMark**: Durante a instalação ou inicialização do DeerPrint, o desinstalador antigo é executado automaticamente em segundo plano.
