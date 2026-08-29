@@ -4,6 +4,12 @@ Todas as mudanças e lançamentos notáveis do **DeerPrint** são documentados n
 
 ---
 
+## [3.0.1] - 2026-08-29
+### 🧹 Desinstalação Automática da Versão Legada (ScreenshotMark)
+- **Desinstalação Silenciosa do ScreenshotMark**: Durante a instalação ou inicialização do DeerPrint, o desinstalador antigo é executado automaticamente em segundo plano.
+- **Limpeza de Atalhos**: Remoção automática de atalhos e diretórios antigos do ScreenshotMark na Área de Trabalho e Menu Iniciar.
+- **Instalador NSIS Aprimorado**: Inclusão de rotina `build/installer.nsh` para desinstalação e limpeza de chaves do registro do Windows.
+
 ## [3.0.0] - 2026-08-29
 ### 🦌 Grande Lançamento DeerPrint v3.0.0 (Nova Marca & Ícones Renovados)
 - **Ícones Oficiais Renovados**:

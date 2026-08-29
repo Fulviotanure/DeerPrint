@@ -120,6 +120,46 @@ if (!isPrimaryInstance) {
     }
   }
 
+  function cleanupLegacyScreenshotMark() {
+    try {
+      const desktopPath = app.getPath('desktop');
+      const oldDesktopShortcut = path.join(desktopPath, 'ScreenshotMark.lnk');
+      if (fs.existsSync(oldDesktopShortcut)) {
+        fs.unlinkSync(oldDesktopShortcut);
+        console.log('Atalho legado ScreenshotMark removido do Desktop.');
+      }
+
+      const appData = process.env.APPDATA;
+      if (appData) {
+        const oldStartMenuShortcut = path.join(appData, 'Microsoft', 'Windows', 'Start Menu', 'Programs', 'ScreenshotMark.lnk');
+        if (fs.existsSync(oldStartMenuShortcut)) {
+          try { fs.unlinkSync(oldStartMenuShortcut); } catch (e) {}
+        }
+        const oldStartMenuDir = path.join(appData, 'Microsoft', 'Windows', 'Start Menu', 'Programs', 'ScreenshotMark');
+        if (fs.existsSync(oldStartMenuDir)) {
+          try { fs.rmSync(oldStartMenuDir, { recursive: true, force: true }); } catch (e) {}
+        }
+      }
+
+      const localAppData = process.env.LOCALAPPDATA;
+      if (localAppData) {
+        const oldAppDir = path.join(localAppData, 'Programs', 'screenshotmark');
+        if (fs.existsSync(oldAppDir)) {
+          const uninstaller = path.join(oldAppDir, 'Uninstall ScreenshotMark.exe');
+          if (fs.existsSync(uninstaller)) {
+            const { spawn } = require('child_process');
+            const child = spawn(uninstaller, ['/S', `_?=${oldAppDir}`], { detached: true, stdio: 'ignore' });
+            child.unref();
+          } else {
+            try { fs.rmSync(oldAppDir, { recursive: true, force: true }); } catch (e) {}
+          }
+        }
+      }
+    } catch (e) {
+      console.warn('Aviso na limpeza do ScreenshotMark legado:', e.message);
+    }
+  }
+
   function updateTrayMenu() {
     if (!tray || tray.isDestroyed()) return;
 
@@ -308,6 +348,9 @@ if (!isPrimaryInstance) {
   // App lifecycle
   app.whenReady().then(() => {
     store = new Store();
+
+    // Limpa atalhos e resíduos da versão antiga do ScreenshotMark se existirem
+    cleanupLegacyScreenshotMark();
 
     // Aplica configuração de inicialização com o Windows
     const autoStartEnabled = store.getSettings().autoStart !== false;
