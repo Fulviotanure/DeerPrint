@@ -1,6 +1,6 @@
 {
   "name": "screenshotmark",
-  "version": "2.1.1",
+  "version": "2.1.2",
   "description": "App desktop moderno para captura de tela com atalho configurável e auto-save",
   "main": "src/main/main.js",
   "scripts": {
@@ -25,8 +25,7 @@
     "publish": {
       "provider": "github",
       "owner": "Fulviotanure",
-      "repo": "screenshotmark",
-      "releaseType": "release"
+      "repo": "screenshotmark"
     },
     "directories": {
       "output": "release"
@@ -50,17 +49,19 @@
       "src/main/native/**/*"
     ],
     "nsis": {
-      "oneClick": true,
+      "oneClick": false,
       "perMachine": false,
       "allowElevation": true,
-      "allowToChangeInstallationDirectory": false,
-      "createDesktopShortcut": true,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": "always",
       "createStartMenuShortcut": true,
       "shortcutName": "ScreenshotMark",
       "artifactName": "${productName}-Setup-${version}.${ext}",
       "runAfterFinish": true,
       "installerIcon": "src/assets/icon.ico",
-      "uninstallerIcon": "src/assets/icon.ico"
+      "uninstallerIcon": "src/assets/icon.ico",
+      "uninstallDisplayName": "${productName}",
+      "deleteAppDataOnUninstall": false
     }
   },
   "devDependencies": {
