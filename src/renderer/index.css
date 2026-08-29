@@ -2941,14 +2941,14 @@ h1, h2, h3, h4,
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: linear-gradient(135deg, rgba(30, 41, 59, 0.7), rgba(15, 23, 42, 0.8));
+  background: var(--bg-surface-elevated, #1b1e1b);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(56, 189, 248, 0.25);
+  border: 1px solid var(--border-subtle, #2a3227);
   border-radius: var(--radius-lg);
   padding: 18px 20px;
   gap: 16px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
   position: relative;
   overflow: hidden;
 }
@@ -2960,7 +2960,7 @@ h1, h2, h3, h4,
   left: -100%;
   width: 50%;
   height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(56, 189, 248, 0.08), transparent);
+  background: linear-gradient(90deg, transparent, rgba(184, 205, 167, 0.06), transparent);
   animation: shineCard 6s infinite;
   pointer-events: none;
 }
@@ -2979,20 +2979,24 @@ h1, h2, h3, h4,
 .update-app-icon {
   width: 48px;
   height: 48px;
-  border-radius: 14px;
-  background: linear-gradient(135deg, #0284c7, #06b6d4 50%, #3b82f6);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #ffffff;
-  box-shadow: 0 6px 20px rgba(6, 182, 212, 0.4), inset 0 1px 1px rgba(255, 255, 255, 0.4);
+  background: transparent;
   flex-shrink: 0;
+}
+
+.update-app-icon img {
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
+  filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.4));
 }
 
 .update-app-title {
   font-size: 16px;
   font-weight: 700;
-  color: #ffffff;
+  color: var(--text-primary);
   letter-spacing: -0.2px;
 }
 
@@ -3008,15 +3012,15 @@ h1, h2, h3, h4,
 .version-pill {
   display: inline-flex;
   align-items: center;
-  background: rgba(56, 189, 248, 0.15);
-  color: #38bdf8;
-  border: 1px solid rgba(56, 189, 248, 0.35);
+  background: rgba(184, 205, 167, 0.15);
+  color: #d4e9c2;
+  border: 1px solid rgba(184, 205, 167, 0.35);
   padding: 2px 10px;
   border-radius: 999px;
   font-size: 11.5px;
   font-weight: 700;
   letter-spacing: 0.3px;
-  box-shadow: 0 0 12px rgba(56, 189, 248, 0.2);
+  box-shadow: 0 0 10px rgba(184, 205, 167, 0.15);
 }
 
 .update-card-right {
@@ -3028,22 +3032,22 @@ h1, h2, h3, h4,
 
 .btn-glow {
   position: relative;
-  box-shadow: 0 0 20px rgba(6, 182, 212, 0.5) !important;
+  box-shadow: 0 0 16px rgba(184, 205, 167, 0.35) !important;
   animation: pulseGlow 2s infinite alternate ease-in-out;
 }
 
 @keyframes pulseGlow {
-  0% { box-shadow: 0 0 12px rgba(6, 182, 212, 0.4); transform: scale(1); }
-  100% { box-shadow: 0 0 24px rgba(6, 182, 212, 0.7); transform: scale(1.02); }
+  0% { box-shadow: 0 0 10px rgba(184, 205, 167, 0.25); transform: scale(1); }
+  100% { box-shadow: 0 0 20px rgba(184, 205, 167, 0.5); transform: scale(1.02); }
 }
 
 .update-status-box {
   display: flex;
   align-items: flex-start;
   gap: 14px;
-  background: rgba(15, 23, 42, 0.6);
+  background: var(--bg-surface-elevated, #181b18);
   backdrop-filter: blur(8px);
-  border: 1px solid var(--border-subtle);
+  border: 1px solid var(--border-subtle, #2a3227);
   border-radius: var(--radius-md);
   padding: 14px 16px;
   margin-top: 14px;
@@ -3060,40 +3064,40 @@ h1, h2, h3, h4,
 }
 
 .status-idle .status-indicator-dot {
-  background: #94a3b8;
-  box-shadow: 0 0 8px rgba(148, 163, 184, 0.4);
+  background: #b8cda7;
+  box-shadow: 0 0 8px rgba(184, 205, 167, 0.4);
 }
 
 .status-checking {
-  border-color: rgba(56, 189, 248, 0.4);
-  background: rgba(56, 189, 248, 0.05);
+  border-color: rgba(184, 205, 167, 0.4);
+  background: rgba(184, 205, 167, 0.05);
 }
 
 .status-checking .status-indicator-dot {
-  background: #38bdf8;
-  box-shadow: 0 0 14px #38bdf8;
+  background: #d4e9c2;
+  box-shadow: 0 0 14px #d4e9c2;
   animation: pulseRecording 1.2s infinite alternate;
 }
 
 .status-available, .status-downloading {
-  border-color: rgba(245, 158, 11, 0.4);
-  background: rgba(245, 158, 11, 0.05);
+  border-color: rgba(232, 190, 162, 0.4);
+  background: rgba(232, 190, 162, 0.05);
 }
 
 .status-available .status-indicator-dot,
 .status-downloading .status-indicator-dot {
-  background: #f59e0b;
-  box-shadow: 0 0 14px #f59e0b;
+  background: #e8bea2;
+  box-shadow: 0 0 14px #e8bea2;
 }
 
 .status-downloaded {
-  border-color: rgba(16, 185, 129, 0.45);
-  background: rgba(16, 185, 129, 0.06);
+  border-color: rgba(184, 205, 167, 0.5);
+  background: rgba(184, 205, 167, 0.08);
 }
 
 .status-downloaded .status-indicator-dot {
-  background: #10b981;
-  box-shadow: 0 0 16px #10b981;
+  background: #d4e9c2;
+  box-shadow: 0 0 16px #d4e9c2;
 }
 
 .status-error {
@@ -3123,9 +3127,9 @@ h1, h2, h3, h4,
 
 .update-progress-container {
   margin-top: 14px;
-  background: rgba(15, 23, 42, 0.7);
+  background: var(--bg-surface-elevated, #181b18);
   backdrop-filter: blur(8px);
-  border: 1px solid rgba(56, 189, 248, 0.2);
+  border: 1px solid var(--border-subtle, #2a3227);
   border-radius: var(--radius-md);
   padding: 14px 16px;
 }
@@ -3141,8 +3145,8 @@ h1, h2, h3, h4,
 }
 
 .update-pct-badge {
-  background: rgba(56, 189, 248, 0.2);
-  color: #38bdf8;
+  background: rgba(184, 205, 167, 0.2);
+  color: #d4e9c2;
   padding: 2px 8px;
   border-radius: 6px;
   font-weight: 700;
@@ -3160,11 +3164,11 @@ h1, h2, h3, h4,
 
 .update-progress-bar {
   height: 100%;
-  background: linear-gradient(90deg, #06b6d4, #3b82f6 50%, #8b5cf6);
+  background: linear-gradient(90deg, #394b2e, #8aa876 50%, #d4e9c2);
   background-size: 200% 100%;
   border-radius: 999px;
   transition: width 0.25s ease;
-  box-shadow: 0 0 14px rgba(6, 182, 212, 0.6);
+  box-shadow: 0 0 12px rgba(184, 205, 167, 0.4);
   animation: shimmerGradient 2s linear infinite;
 }
 

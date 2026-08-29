@@ -4,6 +4,12 @@ Todas as mudanças e lançamentos notáveis do **DeerPrint** são documentados n
 
 ---
 
+## [3.0.3] - 2026-08-29
+### 🌿 Harmonização Visual Sylvan Core no Painel de Atualizações
+- **Remoção de Tons Azuis Legados**: Substituição de todos os contornos e fundos azuis do painel de atualizações pela paleta oficial Sylvan Core (Midnight Forest `#181b18`, Pale Moss `#d4e9c2` e Forest Green `#394b2e`).
+- **Exibição Limpa do Ícone**: Remoção do fundo/glow azul em torno do logotipo na aba de atualizações, integrando o novo emblema perfeitamente com o design da interface.
+- **Notificações & Badges de Status Reestilizados**: Indicadores de status (pronto, verificando, baixando e atualizado) harmonizados com as cores orgânicas do DeerPrint.
+
 ## [3.0.2] - 2026-08-29
 ### 🎨 Novo Logotipo & Ícone de Alto Contraste
 - **Novo Emblema Oficial Sylvan**: Aplicação do novo logotipo com badge sólido verde floresta, cantos de recorte brancos nítidos e cervo imponente em destaque.
