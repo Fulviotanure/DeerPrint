@@ -3,7 +3,7 @@ const fs = require('fs');
 const path = require('path');
 const os = require('os');
 
-const tempOutDir = path.join(os.tmpdir(), 'screenshotmark-build-' + Date.now());
+const tempOutDir = path.join(os.tmpdir(), 'deerprint-build-' + Date.now());
 const finalDistDir = path.join(__dirname, '../dist');
 const oldVersionsDir = path.join(finalDistDir, 'versoes_antigas');
 

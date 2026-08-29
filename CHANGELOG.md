@@ -4,8 +4,18 @@ Todas as mudanças e lançamentos notáveis do **DeerPrint** são documentados n
 
 ---
 
-## [2.1.2] - 2026-08-29
-### 🦌 Grande Reformulação de Marca & Design System
+## [1.0.0] - 2026-08-29
+### 🦌 Lançamento Oficial DeerPrint v1.0.0 & Ícones Renovados
+- **Ícones Oficiais Renovados**:
+  - Geração de novo `icon.ico` multi-resolução para Windows (16x16 até 256x256) aplicado ao executável, atalho na área de trabalho e instalador.
+  - Ícone de alta definição `icon.png` (1024x1024) com proporções equilibradas e fundo transparente.
+  - Ícone da bandeja de notificações (`tray-icon.png`) renovado e otimizado para o sistema de tarefas do Windows.
+- **Identidade DeerPrint**:
+  - Novo aplicativo de captura de alta precisão com suporte a anotações vetoriais, zoom loupe e desfoque tipo vidro fosco (glass blur).
+  - Design System Sylvan Core (Dark & Light) com tipografia Manrope & Work Sans.
+- **Instalador & Atualização Automática**:
+  - Compilação do instalador interativo NSIS `DeerPrint-Setup-1.0.0.exe`.
+  - Integração contínua e distribuição automatizada com GitHub Actions e GitHub Releases.
 - **Novo Nome Oficial**: Transição completa da identidade do aplicativo para **DeerPrint** (`deerprint`).
 - **Novo Logotipo**: Ícone e ilustrações do cervo com retículo de precisão verde-oliva aplicados no cabeçalho e na tela inicial do editor.
 - **Design System Sylvan Core**:

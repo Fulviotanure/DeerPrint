@@ -86,7 +86,7 @@ function proceedWithVersion(version) {
     console.log(`🎉 SUCESSO! A tag ${tagName} foi enviada para o GitHub!`);
     console.log('O GitHub Actions já começou a compilar e publicar a versão na nuvem.');
     console.log('Acompanhe o progresso em:');
-    console.log(`https://github.com/${packageJson.build?.publish?.owner || 'Fulviotanure'}/${packageJson.build?.publish?.repo || 'screenshotmark'}/actions`);
+    console.log(`https://github.com/${packageJson.build?.publish?.owner || 'Fulviotanure'}/${packageJson.build?.publish?.repo || 'deerprint'}/actions`);
     console.log('=============================================================\n');
   } catch (err) {
     console.error('\n❌ Erro durante o processo do Git:', err.message);
