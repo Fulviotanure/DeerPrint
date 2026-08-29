@@ -79,12 +79,25 @@ function initUpdater(mainWindow, store) {
     });
   });
 
+function sanitizeUpdateError(err) {
+  if (!err) return 'Erro desconhecido ao verificar atualização.';
+  const raw = err.message || err.toString();
+  if (raw.includes('Cannot find latest.yml') || raw.includes('404')) {
+    return 'A nova versão foi registrada e está sendo compilada pelo GitHub Actions na nuvem. Aguarde de 2 a 5 minutos para a conclusão e clique em "Verificar Novamente".';
+  }
+  if (raw.includes('ERR_INTERNET_DISCONNECTED') || raw.includes('ENOTFOUND') || raw.includes('ETIMEDOUT') || raw.includes('ECONNRESET')) {
+    return 'Não foi possível conectar ao GitHub. Verifique sua conexão com a internet e tente novamente.';
+  }
+  const cleanLine = raw.split('\n')[0].replace(/Headers:\s*\{.*?\}/gi, '').trim();
+  return cleanLine.length > 140 ? cleanLine.substring(0, 140) + '...' : cleanLine;
+}
+
   autoUpdater.on('error', (err) => {
-    const errorMsg = err == null ? 'Erro desconhecido ao verificar atualização' : (err.message || err.toString());
+    const cleanMsg = sanitizeUpdateError(err);
     sendStatusToWindow({
       status: 'error',
-      error: errorMsg,
-      message: app.isPackaged ? `Falha na verificação: ${errorMsg}` : 'Modo de desenvolvimento (as atualizações automáticas são ativadas no app instalado).'
+      error: cleanMsg,
+      message: app.isPackaged ? cleanMsg : 'Modo de desenvolvimento (as atualizações automáticas são ativadas no app instalado).'
     });
   });
 
@@ -115,12 +128,13 @@ function initUpdater(mainWindow, store) {
       const result = await autoUpdater.checkForUpdates();
       return { success: true, result };
     } catch (err) {
+      const cleanMsg = sanitizeUpdateError(err);
       sendStatusToWindow({
         status: 'error',
-        error: err.message,
-        message: `Erro ao buscar atualizações: ${err.message}`
+        error: cleanMsg,
+        message: cleanMsg
       });
-      return { success: false, error: err.message };
+      return { success: false, error: cleanMsg };
     }
   });
 
