@@ -4,8 +4,8 @@ Todas as mudanças e lançamentos notáveis do **DeerPrint** são documentados n
 
 ---
 
-## [1.0.0] - 2026-08-29
-### 🦌 Lançamento Oficial DeerPrint v1.0.0 & Ícones Renovados
+## [3.0.0] - 2026-08-29
+### 🦌 Grande Lançamento DeerPrint v3.0.0 (Nova Marca & Ícones Renovados)
 - **Ícones Oficiais Renovados**:
   - Geração de novo `icon.ico` multi-resolução para Windows (16x16 até 256x256) aplicado ao executável, atalho na área de trabalho e instalador.
   - Ícone de alta definição `icon.png` (1024x1024) com proporções equilibradas e fundo transparente.
