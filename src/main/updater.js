@@ -17,8 +17,19 @@ function sendStatusToWindow(statusObj) {
   }
 }
 
+let isInitialized = false;
+
 function initUpdater(mainWindow, store) {
   mainWindowRef = mainWindow;
+
+  if (mainWindowRef && !mainWindowRef.isDestroyed()) {
+    mainWindowRef.webContents.send('updater:status', lastUpdateStatus);
+  }
+
+  if (isInitialized) {
+    return;
+  }
+  isInitialized = true;
 
   // Configurações do autoUpdater
   autoUpdater.autoDownload = true;
@@ -79,18 +90,18 @@ function initUpdater(mainWindow, store) {
     });
   });
 
-function sanitizeUpdateError(err) {
-  if (!err) return 'Erro desconhecido ao verificar atualização.';
-  const raw = err.message || err.toString();
-  if (raw.includes('Cannot find latest.yml') || raw.includes('404')) {
-    return 'A nova versão foi registrada e está sendo compilada pelo GitHub Actions na nuvem. Aguarde de 2 a 5 minutos para a conclusão e clique em "Verificar Novamente".';
+  function sanitizeUpdateError(err) {
+    if (!err) return 'Erro desconhecido ao verificar atualização.';
+    const raw = err.message || err.toString();
+    if (raw.includes('Cannot find latest.yml') || raw.includes('404')) {
+      return 'A nova versão foi registrada e está sendo compilada pelo GitHub Actions na nuvem. Aguarde de 2 a 5 minutos para a conclusão e clique em "Verificar Novamente".';
+    }
+    if (raw.includes('ERR_INTERNET_DISCONNECTED') || raw.includes('ENOTFOUND') || raw.includes('ETIMEDOUT') || raw.includes('ECONNRESET')) {
+      return 'Não foi possível conectar ao GitHub. Verifique sua conexão com a internet e tente novamente.';
+    }
+    const cleanLine = raw.split('\n')[0].replace(/Headers:\s*\{.*?\}/gi, '').trim();
+    return cleanLine.length > 140 ? cleanLine.substring(0, 140) + '...' : cleanLine;
   }
-  if (raw.includes('ERR_INTERNET_DISCONNECTED') || raw.includes('ENOTFOUND') || raw.includes('ETIMEDOUT') || raw.includes('ECONNRESET')) {
-    return 'Não foi possível conectar ao GitHub. Verifique sua conexão com a internet e tente novamente.';
-  }
-  const cleanLine = raw.split('\n')[0].replace(/Headers:\s*\{.*?\}/gi, '').trim();
-  return cleanLine.length > 140 ? cleanLine.substring(0, 140) + '...' : cleanLine;
-}
 
   autoUpdater.on('error', (err) => {
     const cleanMsg = sanitizeUpdateError(err);
@@ -146,12 +157,12 @@ function sanitizeUpdateError(err) {
     }
   });
 
-  // Verificação automática inicial se habilitada
+  // Verificação automática inicial se habilitada (delay de 12s para não concorrer no boot)
   const settings = store ? store.getSettings() : {};
   if (settings.autoCheckUpdates !== false && app.isPackaged) {
     setTimeout(() => {
       autoUpdater.checkForUpdates().catch(() => {});
-    }, 4000);
+    }, 12000);
   }
 }
 

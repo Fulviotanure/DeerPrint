@@ -21,8 +21,22 @@ if (!isPrimaryInstance) {
   let isCapturing = false;
   let isQuitting = false;
 
-  app.on('second-instance', () => {
-    showMainWindow();
+  app.on('second-instance', (event, commandLine) => {
+    // Se a segunda instância foi disparada pelo autostart do Windows ou flag oculta, não abre a janela
+    const isSecondHidden = Array.isArray(commandLine) && commandLine.some(arg => {
+      const lower = String(arg).toLowerCase().trim();
+      return [
+        '--hidden', '-hidden', '/hidden',
+        '--minimized', '-minimized', '/minimized',
+        '--autostart', '-autostart', '/autostart',
+        '--silent', '-silent', '/silent',
+        '--background', '-background', '/background'
+      ].includes(lower);
+    });
+
+    if (!isSecondHidden) {
+      showMainWindow();
+    }
   });
 
   function getAppIcon() {
@@ -46,7 +60,7 @@ if (!isPrimaryInstance) {
       if (showImmediately) {
         showMainWindow();
       }
-      return;
+      return mainWindow;
     }
 
     const appIcon = getAppIcon();
@@ -56,7 +70,7 @@ if (!isPrimaryInstance) {
       height: 800,
       minWidth: 800,
       minHeight: 600,
-      show: showImmediately,
+      show: false,
       icon: appIcon || undefined,
       backgroundColor: '#121412',
       title: 'DeerPrint - Editor & Capturas',
@@ -70,8 +84,17 @@ if (!isPrimaryInstance) {
 
     mainWindow.loadFile(path.join(__dirname, '../renderer/index.html'));
 
-    // Inicializa o gerenciador de atualizações
+    // Conecta o gerenciador de atualizações à janela ativa
     initUpdater(mainWindow, store);
+
+    if (showImmediately) {
+      mainWindow.once('ready-to-show', () => {
+        if (mainWindow && !mainWindow.isDestroyed()) {
+          mainWindow.show();
+          mainWindow.focus();
+        }
+      });
+    }
 
     // Ao clicar em fechar (X), esconde para segundo plano (Bandeja / Tray) em vez de encerrar
     mainWindow.on('close', (event) => {
@@ -85,6 +108,8 @@ if (!isPrimaryInstance) {
     mainWindow.on('closed', () => {
       mainWindow = null;
     });
+
+    return mainWindow;
   }
 
   function showMainWindow() {
@@ -99,8 +124,8 @@ if (!isPrimaryInstance) {
 
   function applyAutoStart(enable) {
     try {
-      const appPath = process.execPath;
       if (app.isPackaged) {
+        const appPath = process.execPath;
         app.setLoginItemSettings({
           openAtLogin: !!enable,
           openAsHidden: true,
@@ -108,11 +133,9 @@ if (!isPrimaryInstance) {
           args: ['--hidden']
         });
       } else {
+        // Em modo de desenvolvimento, garante que o electron.exe de desenvolvimento NUNCA seja registrado no Windows
         app.setLoginItemSettings({
-          openAtLogin: !!enable,
-          openAsHidden: true,
-          path: appPath,
-          args: [path.resolve(process.argv[1]), '--hidden']
+          openAtLogin: false
         });
       }
     } catch (err) {
@@ -120,13 +143,22 @@ if (!isPrimaryInstance) {
     }
   }
 
-  function cleanupLegacyScreenshotMark() {
+  function cleanupLegacyAndDevStartupEntries() {
+    // 1. Limpa chaves do registro de versões legadas e resíduos de dev
+    try {
+      const { exec } = require('child_process');
+      const obsoleteKeys = ['electron.app.ScreenshotMark', 'electron.app.Electron', 'ScreenshotMark'];
+      for (const key of obsoleteKeys) {
+        exec(`reg delete "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run" /v "${key}" /f`, () => {});
+      }
+    } catch (e) {}
+
+    // 2. Limpa atalhos legados do ScreenshotMark
     try {
       const desktopPath = app.getPath('desktop');
       const oldDesktopShortcut = path.join(desktopPath, 'ScreenshotMark.lnk');
       if (fs.existsSync(oldDesktopShortcut)) {
-        fs.unlinkSync(oldDesktopShortcut);
-        console.log('Atalho legado ScreenshotMark removido do Desktop.');
+        try { fs.unlinkSync(oldDesktopShortcut); } catch (e) {}
       }
 
       const appData = process.env.APPDATA;
@@ -155,9 +187,7 @@ if (!isPrimaryInstance) {
           }
         }
       }
-    } catch (e) {
-      console.warn('Aviso na limpeza do ScreenshotMark legado:', e.message);
-    }
+    } catch (e) {}
   }
 
   function updateTrayMenu() {
@@ -345,39 +375,51 @@ if (!isPrimaryInstance) {
     }
   }
 
+  function isLaunchedHidden() {
+    const loginSettings = app.getLoginItemSettings();
+    if (loginSettings.wasOpenedAtLogin || loginSettings.wasOpenedAsHidden) {
+      return true;
+    }
+    return process.argv.some(arg => {
+      const lower = String(arg).toLowerCase().trim();
+      return [
+        '--hidden', '-hidden', '/hidden',
+        '--minimized', '-minimized', '/minimized',
+        '--autostart', '-autostart', '/autostart',
+        '--silent', '-silent', '/silent',
+        '--background', '-background', '/background'
+      ].includes(lower);
+    });
+  }
+
   // App lifecycle
   app.whenReady().then(() => {
     store = new Store();
 
-    // Limpa atalhos e resíduos da versão antiga do ScreenshotMark se existirem
-    cleanupLegacyScreenshotMark();
+    // Limpa atalhos e resíduos da versão antiga do ScreenshotMark e chaves dev
+    cleanupLegacyAndDevStartupEntries();
 
-    // Aplica configuração de inicialização com o Windows
+    // Aplica configuração de inicialização com o Windows (apenas para app empacotado)
     const autoStartEnabled = store.getSettings().autoStart !== false;
     applyAutoStart(autoStartEnabled);
 
+    // Cria o ícone oficial na bandeja de notificações (System Tray)
     createTray();
 
-    const loginSettings = app.getLoginItemSettings();
-    const isStartupLaunch = !!(loginSettings.wasOpenedAtLogin || loginSettings.wasOpenedAsHidden);
-    const hasHiddenFlag = process.argv.some(arg => {
-      const lower = String(arg).toLowerCase();
-      return ['--hidden', '--minimized', '-hidden', '/hidden', '--autostart', '-silent', '--silent', '/background'].includes(lower);
-    });
-    const isHiddenLaunch = isStartupLaunch || hasHiddenFlag;
-
-    if (isHiddenLaunch) {
-      // Cria a janela sem exibir na tela (show: false) para deixar apenas o ícone na bandeja
-      createMainWindow(false);
-    } else {
-      createMainWindow(true);
-    }
+    // Conecta o verificador de atualizações em background
+    initUpdater(mainWindow, store);
 
     // Registra atalho configurado (padrão: F10)
     const currentHotkey = store.getSettings().hotkey || 'F10';
     const regResult = registerGlobalShortcut(currentHotkey);
     if (!regResult.success) {
       registerGlobalShortcut('F10');
+    }
+
+    // Se NÃO for inicialização oculta (boot do Windows / background flag), abre a janela do editor imediatamente.
+    // Se for inicialização oculta (--hidden), NÃO cria a janela no boot: fica 100% silencioso na bandeja!
+    if (!isLaunchedHidden()) {
+      createMainWindow(true);
     }
 
     app.on('activate', () => {
@@ -608,20 +650,18 @@ if (!isPrimaryInstance) {
       }
       isCapturing = false;
 
-      // 4. Se o editor estava aberto, restaura/mostra o editor com a nova captura.
-      // Se a captura foi tirada em segundo plano pelo atalho F10, mantém minimizado/em bandeja sem roubar foco!
+      // 4. Se o editor estava aberto antes da captura, restaura/mostra o editor com a nova captura.
+      // Se a captura foi tirada em segundo plano pelo atalho F10, mantém silencioso na bandeja sem abrir janela.
       if (!mainWindow || mainWindow.isDestroyed()) {
-        createMainWindow(wasEditorOpenBeforeCapture);
-        mainWindow.webContents.once('did-finish-load', () => {
-          mainWindow.webContents.send('new-screenshot', {
-            ...entry,
-            dataUrl
+        if (wasEditorOpenBeforeCapture) {
+          createMainWindow(true);
+          mainWindow.webContents.once('did-finish-load', () => {
+            mainWindow.webContents.send('new-screenshot', {
+              ...entry,
+              dataUrl
+            });
           });
-          if (wasEditorOpenBeforeCapture) {
-            mainWindow.show();
-            mainWindow.focus();
-          }
-        });
+        }
       } else {
         mainWindow.webContents.send('new-screenshot', {
           ...entry,
@@ -632,8 +672,6 @@ if (!isPrimaryInstance) {
           if (mainWindow.isMinimized()) mainWindow.restore();
           mainWindow.show();
           mainWindow.focus();
-        } else {
-          // Mantém minimizado na bandeja em segundo plano
         }
       }
 

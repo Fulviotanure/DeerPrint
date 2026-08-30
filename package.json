@@ -1,6 +1,6 @@
 {
   "name": "deerprint",
-  "version": "3.0.5",
+  "version": "3.0.6",
   "description": "DeerPrint - App desktop moderno e profissional para captura de tela, anotações de precisão e produtividade",
   "main": "src/main/main.js",
   "scripts": {

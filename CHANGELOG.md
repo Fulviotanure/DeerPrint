@@ -4,6 +4,14 @@ Todas as mudanças e lançamentos notáveis do **DeerPrint** são documentados n
 
 ---
 
+## [3.0.6] - 2026-08-30
+### ⚡ Inicialização Instantânea & Execução Silenciosa na Bandeja (System Tray)
+- **Lazy Window Creation no Boot**: O DeerPrint agora inicializa instantaneamente no boot do Windows sem criar a janela pesada Chromium na memória, eliminando a lentidão na inicialização do sistema e reduzindo o consumo inicial de memória para ~30MB.
+- **Bandeja 100% Silenciosa**: Ao ligar o computador ou iniciar com a flag `--hidden`, o aplicativo permanece exclusivamente na área de notificação (System Tray) sem abrir nem minimizar qualquer janela na barra de tarefas.
+- **Proteção do Evento `second-instance`**: Instâncias secundárias disparadas pelo sistema operacional não forçam mais a abertura indevida da janela principal.
+- **Limpeza Automática do Registro do Windows**: Remoção de entradas legadas e de desenvolvimento (`electron.app.ScreenshotMark` e `electron.app.Electron`) da chave de inicialização `HKCU\Software\Microsoft\Windows\CurrentVersion\Run`.
+- **Desacoplamento do Auto-Updater**: O serviço de atualizações opera normalmente em segundo plano sem exigir a janela aberta e respeita um intervalo de 12 segundos pós-boot para não disputar I/O e CPU com a inicialização do Windows.
+
 ## [3.0.5] - 2026-08-29
 ### 🌿 Harmonização Visual do Balão de Notificação & Limpeza da Aba de Atualizações
 - **Redesign Sylvan Core do Balão de Notificação**: Substituição de todos os contornos e fundos azul-ciano do balão flutuante (`global-update-banner`) pelo design oficial *Midnight Forest* (`#181b18`) e *Pale Moss* (`#d4e9c2`).

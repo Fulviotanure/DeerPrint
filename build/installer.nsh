@@ -24,4 +24,9 @@
   ; Limpa chaves de desinstalacao do registro do Windows
   DeleteRegKey HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\com.screenshotmark.app"
   DeleteRegKey HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\ScreenshotMark"
+
+  ; Limpa entradas legadas de inicializacao com o Windows
+  DeleteRegValue HKCU "Software\Microsoft\Windows\CurrentVersion\Run" "electron.app.ScreenshotMark"
+  DeleteRegValue HKCU "Software\Microsoft\Windows\CurrentVersion\Run" "ScreenshotMark"
+  DeleteRegValue HKCU "Software\Microsoft\Windows\CurrentVersion\Run" "electron.app.Electron"
 !macroend
