@@ -283,8 +283,7 @@ if (!isPrimaryInstance) {
       resizable: false,
       movable: false,
       hasShadow: false,
-      fullscreenable: true,
-      fullscreen: true,
+      fullscreenable: false,
       enableLargerThanScreen: true,
       backgroundColor: '#00000000',
       webPreferences: {

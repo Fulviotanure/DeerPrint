@@ -21,17 +21,11 @@ async function captureWithNativeGDI(activeDisplay) {
       return reject(new Error(`ScreenCapture.exe nativo não encontrado em: ${captureExe}`));
     }
 
-    const scaleFactor = activeDisplay.scaleFactor || 1;
-    const x = Math.round(activeDisplay.bounds.x * scaleFactor);
-    const y = Math.round(activeDisplay.bounds.y * scaleFactor);
-    const width = Math.round(activeDisplay.bounds.width * scaleFactor);
-    const height = Math.round(activeDisplay.bounds.height * scaleFactor);
-
     const tempPath = path.join(app.getPath('temp'), `native_cap_${Date.now()}_${Math.random().toString(36).substr(2, 6)}.png`);
 
     execFile(
       captureExe,
-      [x.toString(), y.toString(), width.toString(), height.toString(), tempPath],
+      ['--cursor', tempPath],
       { windowsHide: true },
       async (err, stdout, stderr) => {
         if (err) {
@@ -47,6 +41,19 @@ async function captureWithNativeGDI(activeDisplay) {
           fs.promises.unlink(tempPath).catch(() => {});
 
           const dataUrl = `data:image/png;base64,${buf.toString('base64')}`;
+          
+          let width = Math.round(activeDisplay.bounds.width * (activeDisplay.scaleFactor || 1));
+          let height = Math.round(activeDisplay.bounds.height * (activeDisplay.scaleFactor || 1));
+
+          if (stdout) {
+            const matchW = stdout.match(/\|W:(\d+)/);
+            const matchH = stdout.match(/\|H:(\d+)/);
+            if (matchW && matchH) {
+              width = parseInt(matchW[1], 10);
+              height = parseInt(matchH[1], 10);
+            }
+          }
+
           resolve({
             dataUrl,
             imageSize: { width, height }

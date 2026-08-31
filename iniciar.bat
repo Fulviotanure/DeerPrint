@@ -1,4 +1,10 @@
 @echo off
-title ScreenshotMark
+title DeerPrint
 cd /d "%~dp0"
-npm start
+
+if not exist "node_modules" (
+  echo Instalando dependencias do DeerPrint...
+  call npm install
+)
+
+call npx electron .

@@ -756,6 +756,10 @@ async function clearWorkspace() {
   state.panOffset = { x: 0, y: 0 };
   state.zoom = 1.0;
   activeImage.src = '';
+  canvasWrapper.style.width = '';
+  canvasWrapper.style.height = '';
+  activeImage.style.width = '';
+  activeImage.style.height = '';
 
   const ctx = annotationCanvas.getContext('2d');
   ctx.clearRect(0, 0, annotationCanvas.width, annotationCanvas.height);
@@ -856,8 +860,14 @@ async function loadScreenshotToEditor(item, imageSrc) {
 
 function syncAnnotationCanvasSize() {
   if (activeImage.naturalWidth && activeImage.naturalHeight) {
-    annotationCanvas.width = activeImage.naturalWidth;
-    annotationCanvas.height = activeImage.naturalHeight;
+    const w = activeImage.naturalWidth;
+    const h = activeImage.naturalHeight;
+    annotationCanvas.width = w;
+    annotationCanvas.height = h;
+    canvasWrapper.style.width = `${w}px`;
+    canvasWrapper.style.height = `${h}px`;
+    activeImage.style.width = `${w}px`;
+    activeImage.style.height = `${h}px`;
   }
 }
 
@@ -1650,15 +1660,21 @@ function showInlineEditor(x, y, existingShape = null) {
   // Se já havia um editor aberto com texto digitado, comita primeiro para não perder nada
   commitActiveTextEditor();
 
+  if (existingShape) {
+    x = existingShape.x;
+    y = existingShape.y;
+  }
+
   state.editingShapeId = existingShape ? existingShape.id : null;
   const fontSize = existingShape ? (existingShape.fontSize || 16) : (state.activeFontSize || 16);
   const color = existingShape ? (existingShape.color || state.activeColor) : state.activeColor;
+  const lineHeight = Math.round(fontSize * 1.25);
 
-  // Alinha a caixa para que a ponta do cursor/letras comece exatamente no ponto clicado (x, y)
-  inlineTextEditor.style.left = `${Math.max(0, Math.round(x) - 3)}px`;
-  inlineTextEditor.style.top = `${Math.max(0, Math.round(y) - 2)}px`;
+  // Alinha a caixa para que o texto comece exatamente no ponto (x, y)
+  inlineTextEditor.style.left = `${Math.max(0, Math.round(x))}px`;
+  inlineTextEditor.style.top = `${Math.max(0, Math.round(y))}px`;
   inlineTextEditor.style.fontSize = `${fontSize}px`;
-  inlineTextEditor.style.lineHeight = `${fontSize * 1.15}px`;
+  inlineTextEditor.style.lineHeight = `${lineHeight}px`;
   inlineTextEditor.style.color = color;
   inlineTextEditor.value = existingShape ? existingShape.text : '';
   inlineTextEditor.classList.remove('hidden');
@@ -1668,12 +1684,12 @@ function showInlineEditor(x, y, existingShape = null) {
   }
   redrawAnnotations();
 
-  // Dynamically expand width and height
+  // Expansão dinâmica de largura e altura conforme o usuário digita ou quebra linhas
   const updateSize = () => {
     const lines = inlineTextEditor.value.split('\n');
     const maxLen = Math.max(...lines.map(l => l.length), 4);
-    inlineTextEditor.style.width = `${Math.max(70, Math.round(maxLen * fontSize * 0.65 + 16))}px`;
-    inlineTextEditor.style.height = `${Math.max(Math.round(fontSize * 1.35), Math.round(lines.length * fontSize * 1.25 + 6))}px`;
+    inlineTextEditor.style.width = `${Math.max(80, Math.round(maxLen * fontSize * 0.7 + 24))}px`;
+    inlineTextEditor.style.height = `${Math.max(Math.round(fontSize * 1.35), Math.round(lines.length * lineHeight + 8))}px`;
   };
   updateSize();
   inlineTextEditor.oninput = updateSize;
@@ -1696,7 +1712,7 @@ function showInlineEditor(x, y, existingShape = null) {
         existingShape.fontSize = fontSize;
         state.selectedId = existingShape.id;
       } else {
-        // Pure text without background (T tool)
+        // Texto puro com suporte a multilinhas (Ferramenta T)
         const newTextShape = {
           id: 'ann_' + Date.now(),
           type: 'text',
@@ -1724,9 +1740,14 @@ function showInlineEditor(x, y, existingShape = null) {
   currentTextCommitFn = commitText;
   inlineTextEditor.onblur = commitText;
   inlineTextEditor.onkeydown = (e) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      commitText();
+    if (e.key === 'Enter') {
+      if (e.ctrlKey || e.metaKey) {
+        e.preventDefault();
+        commitText();
+      } else {
+        // Deixa o Enter normal ou Shift+Enter quebrar linha e atualiza tamanho
+        setTimeout(updateSize, 0);
+      }
     } else if (e.key === 'Escape') {
       currentTextCommitFn = null;
       state.editingShapeId = null;
@@ -2068,15 +2089,25 @@ function drawCallout(ctx, shape) {
 
 function renderTextBadge(ctx, shape) {
   const fontSize = shape.fontSize || 16;
+  const lineHeight = fontSize * 1.25;
   ctx.font = `700 ${fontSize}px 'Plus Jakarta Sans', sans-serif`;
-  const metrics = ctx.measureText(shape.text);
-  const textWidth = metrics.width;
+  
+  const textStr = shape.text || '';
+  const lines = textStr.split('\n');
+  let maxLineWidth = 0;
+  lines.forEach(l => {
+    const w = ctx.measureText(l).width;
+    if (w > maxLineWidth) maxLineWidth = w;
+  });
+
+  const textWidth = maxLineWidth;
+  const totalTextHeight = Math.max(fontSize, lines.length * lineHeight);
 
   if (shape.isBadge) {
     // Badge Mode (for tags dragged from sidebar)
     const paddingX = Math.round(fontSize * 0.75);
     const paddingY = Math.round(fontSize * 0.4);
-    const boxHeight = fontSize + paddingY * 2;
+    const boxHeight = totalTextHeight + paddingY * 2;
     const boxWidth = textWidth + paddingX * 2;
     const radius = 6;
 
@@ -2093,12 +2124,14 @@ function renderTextBadge(ctx, shape) {
 
     ctx.shadowColor = 'transparent';
     ctx.fillStyle = shape.color || '#ffffff';
-    ctx.textBaseline = 'middle';
-    ctx.fillText(shape.text, shape.x + paddingX, shape.y + boxHeight / 2);
+    ctx.textBaseline = 'top';
+    lines.forEach((line, i) => {
+      ctx.fillText(line, shape.x + paddingX, shape.y + paddingY + i * lineHeight);
+    });
   } else {
-    // Pure Clean Text Mode (T tool - no badge background, no shadow)
+    // Pure Clean Text Mode (T tool - no badge background, no shadow, full multiline support)
     shape.width = Math.max(20, textWidth);
-    shape.height = Math.max(14, fontSize * 1.15);
+    shape.height = Math.max(14, totalTextHeight);
 
     ctx.shadowColor = 'transparent';
     ctx.shadowBlur = 0;
@@ -2107,7 +2140,9 @@ function renderTextBadge(ctx, shape) {
 
     ctx.fillStyle = shape.color || state.activeColor || '#ef4444';
     ctx.textBaseline = 'top';
-    ctx.fillText(shape.text, shape.x, shape.y);
+    lines.forEach((line, i) => {
+      ctx.fillText(line, shape.x, shape.y + i * lineHeight);
+    });
   }
 }
 
