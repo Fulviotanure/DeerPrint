@@ -4,7 +4,18 @@ Todas as mudanças e lançamentos notáveis do **DeerPrint** são documentados n
 
 ---
 
-## [3.0.6] - 2026-08-30
+## [3.0.8] - 2026-09-04
+### 🎯 Precisão de Desenho Livre & Posicionamento Exato do Texto
+- **Desenho Livre Sem Interferência**: Ferramentas de desenho (Seta, Retângulo, Caneta, Círculo, etc.) agora iniciam o desenho imediatamente a partir do ponto clicado, sem selecionar nem arrastar objetos existentes por acidente ao iniciar perto de uma seta ou quadrado.
+- **Itens Ativos para Edição & Desseleção Inteligente**: O elemento recém-desenhado ou selecionado permanece ativo com suas alças visíveis para troca imediata de cor, espessura ou exclusão com `Delete`, até que o usuário clique fora no vazio para desselecionar ou comece um novo desenho com clique e arraste.
+- **Movimentação e Redimensionamento Exclusivos no Modo Seleção**: Apenas a ferramenta de Seleção (`V` / `tool-select`) é responsável por selecionar, mover e redimensionar elementos existentes.
+- **Alinhamento e Posicionamento Perfeito da Caixa de Texto Livre**: Sincronização 1:1 entre as dimensões do wrapper e a resolução nativa da imagem com `flex-shrink: 0`, eliminando qualquer deslocamento da caixa de edição em qualquer nível de zoom ou proporção de tela.
+- **Edição Direta de Texto**: Clicar em um texto existente com a ferramenta de Texto ativa abre o editor imediatamente para edição.
+
+## [3.0.7] - 2026-08-31
+### 🖥️ Captura em Telas Multi-Monitor & Suporte a Multilinhas no Texto
+- **Captura Precisa em Notebooks & Multi-Monitor**: Correção de escala DPI e coordenadas de tela em configurações com múltiplos monitores e notebooks de alta resolução.
+- **Texto Multilinha**: Suporte a quebras de linha com Enter/Shift+Enter no editor de texto e renderização precisa de múltiplas linhas no canvas.
 ### ⚡ Inicialização Instantânea & Execução Silenciosa na Bandeja (System Tray)
 - **Lazy Window Creation no Boot**: O DeerPrint agora inicializa instantaneamente no boot do Windows sem criar a janela pesada Chromium na memória, eliminando a lentidão na inicialização do sistema e reduzindo o consumo inicial de memória para ~30MB.
 - **Bandeja 100% Silenciosa**: Ao ligar o computador ou iniciar com a flag `--hidden`, o aplicativo permanece exclusivamente na área de notificação (System Tray) sem abrir nem minimizar qualquer janela na barra de tarefas.

@@ -792,6 +792,7 @@ async function handleNewScreenshot(data) {
   
   activeImage.onload = () => {
     syncAnnotationCanvasSize();
+    fitToScreen();
     redrawAnnotations();
   };
 
@@ -838,6 +839,7 @@ async function loadScreenshotToEditor(item, imageSrc) {
   activeImage.src = `file:///${cleanPath}?t=${bust}`;
   activeImage.onload = () => {
     syncAnnotationCanvasSize();
+    fitToScreen();
     redrawAnnotations();
   };
 
@@ -1291,24 +1293,6 @@ function getCanvasPoint(e) {
   };
 }
 
-function isToolMatchingObject(activeTool, objectType) {
-  if (!activeTool || !objectType) return false;
-  if (activeTool === 'select') return true;
-  if (activeTool === objectType) return true;
-
-  // Equivalências de grupos de formas
-  const RECT_TYPES = ['rect', 'rounded-rect', 'rect-fill'];
-  if (RECT_TYPES.includes(activeTool) && RECT_TYPES.includes(objectType)) return true;
-
-  const CIRCLE_TYPES = ['circle', 'circle-fill'];
-  if (CIRCLE_TYPES.includes(activeTool) && CIRCLE_TYPES.includes(objectType)) return true;
-
-  const ARROW_TYPES = ['arrow', 'double-arrow', 'line'];
-  if (ARROW_TYPES.includes(activeTool) && ARROW_TYPES.includes(objectType)) return true;
-
-  return false;
-}
-
 // Canvas Mouse Handlers
 function onCanvasMouseDown(e) {
   // Salva qualquer texto que estava sendo digitado antes de processar o clique
@@ -1327,50 +1311,62 @@ function onCanvasMouseDown(e) {
 
   const pt = getCanvasPoint(e);
   state.dragStartPos = pt;
-  state.isDrawing = true;
 
-  // 1. Se já há uma forma selecionada, só processa alças de redimensionamento/movimento se a ferramenta ativa coincidir com o tipo da forma
-  if (state.selectedId) {
-    const selected = state.annotations.find(a => a.id === state.selectedId);
-    if (selected && isToolMatchingObject(state.activeTool, selected.type)) {
-      const handle = getHandleUnderCursor(pt.x, pt.y, selected);
-      if (handle) {
-        state.activeHandle = handle;
-        state.initialShapeState = JSON.parse(JSON.stringify(selected));
-        return;
+  // --------------------------------------------------------------------------
+  // CASO 1: Ferramenta de Seleção ('select')
+  // Permite selecionar, mover alças ou mover o corpo de qualquer elemento
+  // --------------------------------------------------------------------------
+  if (state.activeTool === 'select') {
+    state.isDrawing = true;
+
+    // 1. Se já há uma forma selecionada, verifica se clicou em uma de suas alças
+    if (state.selectedId) {
+      const selected = state.annotations.find(a => a.id === state.selectedId);
+      if (selected) {
+        const handle = getHandleUnderCursor(pt.x, pt.y, selected);
+        if (handle) {
+          state.activeHandle = handle;
+          state.initialShapeState = JSON.parse(JSON.stringify(selected));
+          return;
+        }
       }
-    } else if (state.selectedId && state.activeTool !== 'select') {
-      // Se o usuário selecionou outra ferramenta (ex: seta), desseleciona para desenhar livremente a partir de qualquer ponto
+    }
+
+    // 2. Verifica se clicou diretamente sobre alguma forma existente
+    const clickedShape = getShapeUnderCursor(pt.x, pt.y);
+    if (clickedShape) {
+      state.selectedId = clickedShape.id;
+      state.activeHandle = 'body';
+      state.initialShapeState = JSON.parse(JSON.stringify(clickedShape));
+      if (clickedShape.fontSize) {
+        updateTextSizeUI(clickedShape.fontSize);
+      }
+      if (clickedShape.type === 'glass' && clickedShape.blurAmount !== undefined) {
+        inputBlurStrength.value = clickedShape.blurAmount;
+        blurValBadge.textContent = `${clickedShape.blurAmount}px`;
+        state.activeBlurStrength = clickedShape.blurAmount;
+      }
+      updateContextualToolbar();
+      redrawAnnotations();
+      return;
+    }
+
+    // 3. Clicou no espaço vazio com a ferramenta select: desseleciona
+    if (state.selectedId) {
       state.selectedId = null;
       state.activeHandle = null;
       updateContextualToolbar();
       redrawAnnotations();
     }
-  }
-
-  // 2. Verifica se clicou sobre uma forma existente
-  // REGRA: Só seleciona e move se a ferramenta ativa for 'select' ou a própria ferramenta daquela forma!
-  const clickedShape = getShapeUnderCursor(pt.x, pt.y);
-
-  if (clickedShape && isToolMatchingObject(state.activeTool, clickedShape.type)) {
-    // Clique sobre forma com a mesma ferramenta ou ferramenta select -> seleciona e prepara para mover/arrastar!
-    state.selectedId = clickedShape.id;
-    state.activeHandle = 'body';
-    state.initialShapeState = JSON.parse(JSON.stringify(clickedShape));
-    if (clickedShape.fontSize) {
-      updateTextSizeUI(clickedShape.fontSize);
-    }
-    if (clickedShape.type === 'glass' && clickedShape.blurAmount !== undefined) {
-      inputBlurStrength.value = clickedShape.blurAmount;
-      blurValBadge.textContent = `${clickedShape.blurAmount}px`;
-      state.activeBlurStrength = clickedShape.blurAmount;
-    }
-    updateContextualToolbar();
-    redrawAnnotations();
+    state.isDrawing = false;
     return;
   }
 
-  // 3. Se clicou com uma ferramenta diferente ou no espaço vazio: limpa seleção anterior
+  // --------------------------------------------------------------------------
+  // CASO 2: Ferramentas de Desenho (Seta, Retângulo, Texto, Círculo, etc.)
+  // REGRA: Clicar para desenhar NUNCA seleciona nem move itens existentes!
+  // Todo item anterior é desselecionado e o novo desenho inicia imediatamente.
+  // --------------------------------------------------------------------------
   if (state.selectedId) {
     state.selectedId = null;
     state.activeHandle = null;
@@ -1378,19 +1374,19 @@ function onCanvasMouseDown(e) {
     redrawAnnotations();
   }
 
-  // Se a ferramenta ativa for 'select' e clicou no vazio, não inicia desenho
-  if (state.activeTool === 'select') {
-    return;
-  }
-
-  // 4. If active tool is 'text', spawn the clean inline editor at the clicked point
+  // Ferramenta de Texto (T)
   if (state.activeTool === 'text') {
     state.isDrawing = false;
+    const clickedText = getShapeUnderCursor(pt.x, pt.y);
+    if (clickedText && clickedText.type === 'text') {
+      showInlineEditor(clickedText.x, clickedText.y, clickedText);
+      return;
+    }
     showInlineEditor(pt.x, pt.y);
     return;
   }
 
-  // 5. If active tool is 'step' (Sequential Numbering Badge 1, 2, 3...)
+  // Ferramenta de Passos Sequenciais (1, 2, 3...)
   if (state.activeTool === 'step') {
     state.isDrawing = false;
     const stepCount = state.annotations.filter(a => a.type === 'step').length;
@@ -1411,7 +1407,8 @@ function onCanvasMouseDown(e) {
     return;
   }
 
-  // 6. Start drawing new shape draft
+  // Demais ferramentas de desenho (Inicia rascunho com mousedown)
+  state.isDrawing = true;
   const id = 'ann_' + Date.now();
   const BOX_TOOLS = ['rect', 'rounded-rect', 'rect-fill', 'circle', 'circle-fill', 'callout', 'glass'];
 
@@ -1469,28 +1466,29 @@ function onCanvasMouseMove(e) {
 
   if (!state.isDrawing) {
     const pt = getCanvasPoint(e);
-    if (state.selectedId) {
-      const selected = state.annotations.find(a => a.id === state.selectedId);
-      if (selected && isToolMatchingObject(state.activeTool, selected.type)) {
-        const handle = getHandleUnderCursor(pt.x, pt.y, selected);
-        if (handle) {
-          updateCursorForHandle(handle);
-          return;
+    if (state.activeTool === 'select') {
+      if (state.selectedId) {
+        const selected = state.annotations.find(a => a.id === state.selectedId);
+        if (selected) {
+          const handle = getHandleUnderCursor(pt.x, pt.y, selected);
+          if (handle) {
+            updateCursorForHandle(handle);
+            return;
+          }
         }
       }
-    }
 
-    const shapeHover = getShapeUnderCursor(pt.x, pt.y);
-    if (shapeHover && isToolMatchingObject(state.activeTool, shapeHover.type)) {
-      if (state.activeTool === 'select' || state.selectedId === shapeHover.id) {
+      const shapeHover = getShapeUnderCursor(pt.x, pt.y);
+      if (shapeHover) {
         annotationCanvas.style.cursor = 'move';
         return;
       }
+
+      annotationCanvas.style.cursor = 'default';
+      return;
     }
 
-    if (state.activeTool === 'select') {
-      annotationCanvas.style.cursor = 'default';
-    } else if (state.activeTool === 'hand') {
+    if (state.activeTool === 'hand') {
       annotationCanvas.style.cursor = 'grab';
     } else if (state.activeTool === 'text') {
       annotationCanvas.style.cursor = 'text';
@@ -1670,9 +1668,18 @@ function showInlineEditor(x, y, existingShape = null) {
   const color = existingShape ? (existingShape.color || state.activeColor) : state.activeColor;
   const lineHeight = Math.round(fontSize * 1.25);
 
-  // Alinha a caixa para que o texto comece exatamente no ponto (x, y)
-  inlineTextEditor.style.left = `${Math.max(0, Math.round(x))}px`;
-  inlineTextEditor.style.top = `${Math.max(0, Math.round(y))}px`;
+  let posX = x;
+  let posY = y;
+  if (existingShape && existingShape.isBadge) {
+    const paddingX = Math.round(fontSize * 0.75);
+    const paddingY = Math.round(fontSize * 0.4);
+    posX += paddingX;
+    posY += paddingY;
+  }
+
+  // Alinha a caixa para que a ponta do cursor/letras comece exatamente no ponto clicado (x, y)
+  inlineTextEditor.style.left = `${Math.max(0, Math.round(posX) - 4)}px`;
+  inlineTextEditor.style.top = `${Math.max(0, Math.round(posY) - 2)}px`;
   inlineTextEditor.style.fontSize = `${fontSize}px`;
   inlineTextEditor.style.lineHeight = `${lineHeight}px`;
   inlineTextEditor.style.color = color;
@@ -1783,7 +1790,7 @@ function redrawAnnotations() {
 
   if (state.selectedId) {
     const selected = state.annotations.find(a => a.id === state.selectedId);
-    if (selected && (state.activeTool === 'select' || isToolMatchingObject(state.activeTool, selected.type))) {
+    if (selected) {
       renderSelectionOutlineAndHandles(ctx, selected);
     }
   }
