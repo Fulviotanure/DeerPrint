@@ -19,6 +19,9 @@ contextBridge.exposeInMainWorld('electronAPI', {
   copyImageToClipboard: (dataUrl) => ipcRenderer.invoke('copy-image-to-clipboard', dataUrl),
   saveImageAs: (dataUrl, defaultName) => ipcRenderer.invoke('save-image-as', { dataUrl, defaultName }),
   saveActiveScreenshot: (filePath, dataUrl) => ipcRenderer.invoke('save-active-screenshot', { filePath, dataUrl }),
+  saveNewCollage: (dataUrl, defaultName) => ipcRenderer.invoke('save-new-collage', { dataUrl, defaultName }),
+  getClipboardImage: () => ipcRenderer.invoke('get-clipboard-image'),
+  selectImageFile: () => ipcRenderer.invoke('select-image-file'),
 
   // Events listener from main process
   onNewScreenshot: (callback) => {

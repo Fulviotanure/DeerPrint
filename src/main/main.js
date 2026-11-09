@@ -607,6 +607,91 @@ if (!isPrimaryInstance) {
     }
   });
 
+  // Salvar nova colagem de prints como arquivo independente
+  ipcMain.handle('save-new-collage', async (event, { dataUrl, defaultName }) => {
+    try {
+      if (!dataUrl) return { success: false, error: 'Imagem inválida' };
+      const settings = store.getSettings();
+      const now = new Date();
+      const pad = (n) => String(n).padStart(2, '0');
+      const timestampStr = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}_${pad(now.getHours())}-${pad(now.getMinutes())}-${pad(now.getSeconds())}`;
+      const fileName = defaultName || `colagem_${timestampStr}.png`;
+      const filePath = path.join(settings.saveDirectory, fileName);
+
+      const img = nativeImage.createFromDataURL(dataUrl);
+      const buffer = img.toPNG();
+      store.ensureDirectory(settings.saveDirectory);
+      await fs.promises.writeFile(filePath, buffer);
+
+      const stats = await fs.promises.stat(filePath);
+      const size = img.getSize();
+      const entry = {
+        id: 'collage_' + Date.now(),
+        fileName,
+        filePath,
+        width: Math.round(size.width),
+        height: Math.round(size.height),
+        timestamp: now.toISOString(),
+        fileSize: stats.size
+      };
+
+      store.addHistoryEntry(entry);
+
+      if (settings.autoCopy !== false) {
+        clipboard.writeImage(img);
+      }
+
+      return { success: true, entry, filePath, fileName, fileSize: stats.size };
+    } catch (err) {
+      console.error('Erro ao salvar nova colagem:', err);
+      return { success: false, error: err.message };
+    }
+  });
+
+  // Ler imagem do clipboard do sistema operacional
+  ipcMain.handle('get-clipboard-image', () => {
+    try {
+      const img = clipboard.readImage();
+      if (!img || img.isEmpty()) {
+        return { success: false, empty: true };
+      }
+      return {
+        success: true,
+        dataUrl: img.toDataURL(),
+        size: img.getSize()
+      };
+    } catch (err) {
+      return { success: false, error: err.message };
+    }
+  });
+
+  // Diálogo para importar arquivo de imagem externo
+  ipcMain.handle('select-image-file', async () => {
+    const parentWin = (mainWindow && !mainWindow.isDestroyed()) ? mainWindow : undefined;
+    const result = await dialog.showOpenDialog(parentWin, {
+      title: 'Selecionar Imagem para a Colagem',
+      filters: [
+        { name: 'Imagens (*.png;*.jpg;*.jpeg;*.webp)', extensions: ['png', 'jpg', 'jpeg', 'webp'] }
+      ],
+      properties: ['openFile']
+    });
+
+    if (!result.canceled && result.filePaths && result.filePaths.length > 0) {
+      const filePath = result.filePaths[0];
+      const img = nativeImage.createFromPath(filePath);
+      if (!img.isEmpty()) {
+        return {
+          success: true,
+          filePath,
+          fileName: path.basename(filePath),
+          dataUrl: img.toDataURL(),
+          size: img.getSize()
+        };
+      }
+    }
+    return { success: false, canceled: true };
+  });
+
   ipcMain.handle('finish-snip', async (event, cropData) => {
     try {
       const { dataUrl, width, height } = cropData;

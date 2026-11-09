@@ -24,6 +24,28 @@
             <span class="brand-title">Deer<span class="brand-highlight">Print</span></span>
           </div>
         </div>
+
+        <!-- Seletor de Modo: Captura Única ou Mesa Livre de Colagem -->
+        <div class="workspace-mode-switcher">
+          <button id="btn-mode-single" class="mode-tab-btn active" title="Modo de Captura e Edição Única">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+              <rect width="18" height="18" x="3" y="3" rx="2"></rect>
+              <circle cx="8.5" cy="8.5" r="1.5"></circle>
+              <polyline points="21 15 16 10 5 21"></polyline>
+            </svg>
+            <span>Captura</span>
+          </button>
+          <button id="btn-mode-collage" class="mode-tab-btn" title="Área de Trabalho Livre / Montagem de Colagens de Prints">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+              <rect x="3" y="3" width="8" height="8" rx="1.5"></rect>
+              <rect x="13" y="3" width="8" height="5" rx="1.5"></rect>
+              <rect x="13" y="10" width="8" height="11" rx="1.5"></rect>
+              <rect x="3" y="13" width="8" height="8" rx="1.5"></rect>
+            </svg>
+            <span>Mesa Livre</span>
+            <span class="mode-tab-badge">Colagem</span>
+          </button>
+        </div>
       </div>
 
       <div class="header-center">
@@ -356,10 +378,125 @@
             </div>
           </div>
         </div>
+
+        <!-- Toolbar para a Área de Trabalho Livre / Montagem de Colagem -->
+        <div id="collage-toolbar" class="collage-toolbar hidden">
+          <!-- Colar da área de transferência -->
+          <button id="btn-collage-paste" class="tool-btn-with-label" title="Colar print copiado da Área de Transferência (Ctrl+V)">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+              <rect width="14" height="14" x="8" y="8" rx="2" ry="2"></rect>
+              <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"></path>
+            </svg>
+            <span>Colar Print</span>
+            <kbd class="tiny-kbd">Ctrl+V</kbd>
+          </button>
+
+          <!-- Importar imagem externa -->
+          <button id="btn-collage-import" class="tool-btn-with-label" title="Importar imagem do computador para a mesa">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="17 8 12 3 7 8"></polyline>
+              <line x1="12" y1="3" x2="12" y2="15"></line>
+            </svg>
+            <span>Adicionar Imagem</span>
+          </button>
+
+          <div class="toolbar-divider"></div>
+
+          <!-- Fundo da Colagem Dropdown -->
+          <div class="collage-bg-wrapper">
+            <button id="btn-collage-bg-toggle" class="tool-btn-with-label" title="Escolher estilo de fundo para a colagem">
+              <span id="collage-bg-preview-swatch" class="bg-preview-swatch bg-sample-grid-dark"></span>
+              <span>Fundo</span>
+              <svg class="dropdown-chevron" width="7" height="7" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="6 9 12 15 18 9"></polyline></svg>
+            </button>
+
+            <div id="collage-bg-popover" class="shapes-popover hidden">
+              <div class="popover-header">
+                <span class="popover-title">FUNDO DA COLAGEM</span>
+              </div>
+              <div class="bg-options-grid">
+                <button class="bg-opt-btn active" data-bg="grid-dark">
+                  <div class="bg-sample bg-sample-grid-dark"></div>
+                  <span>Grade Escura</span>
+                </button>
+                <button class="bg-opt-btn" data-bg="transparent">
+                  <div class="bg-sample bg-sample-transp"></div>
+                  <span>Transparente</span>
+                </button>
+                <button class="bg-opt-btn" data-bg="solid-dark">
+                  <div class="bg-sample bg-sample-dark"></div>
+                  <span>Escuro Sólido</span>
+                </button>
+                <button class="bg-opt-btn" data-bg="solid-light">
+                  <div class="bg-sample bg-sample-light"></div>
+                  <span>Claro / Branco</span>
+                </button>
+                <button class="bg-opt-btn" data-bg="gradient-sylvan">
+                  <div class="bg-sample bg-sample-gradient"></div>
+                  <span>Gradiente Studio</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Auto-Organizar / Alinhamento -->
+          <div class="collage-align-wrapper">
+            <button id="btn-collage-align-toggle" class="tool-btn-with-label" title="Organizar e alinhar prints na mesa">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                <rect x="3" y="3" width="18" height="18" rx="2"></rect>
+                <line x1="3" y1="9" x2="21" y2="9"></line>
+                <line x1="9" y1="21" x2="9" y2="9"></line>
+              </svg>
+              <span>Organizar</span>
+              <svg class="dropdown-chevron" width="7" height="7" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="6 9 12 15 18 9"></polyline></svg>
+            </button>
+
+            <div id="collage-align-popover" class="shapes-popover hidden">
+              <div class="popover-header">
+                <span class="popover-title">ORGANIZAÇÃO AUTOMÁTICA</span>
+              </div>
+              <div class="shapes-grid">
+                <button class="shape-item-btn" id="btn-align-grid" title="Organizar prints em colunas e linhas uniformes">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+                  <span>Grade Uniforme</span>
+                </button>
+                <button class="shape-item-btn" id="btn-align-horizontal" title="Alinhar todos lado a lado horizontalmente">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="6" height="14"></rect><rect x="9" y="5" width="6" height="14"></rect><rect x="16" y="5" width="6" height="14"></rect></svg>
+                  <span>Fileira Horizontal</span>
+                </button>
+                <button class="shape-item-btn" id="btn-align-vertical" title="Alinhar todos empilhados verticalmente">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="6"></rect><rect x="5" y="9" width="14" height="6"></rect><rect x="5" y="16" width="14" height="6"></rect></svg>
+                  <span>Coluna Vertical</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="toolbar-divider"></div>
+
+          <!-- Limpar Mesa -->
+          <button id="btn-collage-clear" class="tool-btn-sm" title="Limpar todos os prints da colagem">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 6h18M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path></svg>
+          </button>
+
+          <span id="collage-items-badge" class="collage-badge-pill">0 prints na mesa</span>
+        </div>
       </div>
 
       <div class="header-right">
-        <!-- Close / Remove Current Screenshot from Workspace -->
+        <!-- Botão para enviar print ativo da captura única para a colagem -->
+        <button id="btn-send-to-collage" class="btn btn-secondary hidden" title="Adicionar o print atual na Mesa Livre de Colagens">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="8" height="8" rx="1.5"></rect>
+            <rect x="13" y="3" width="8" height="5" rx="1.5"></rect>
+            <rect x="13" y="10" width="8" height="11" rx="1.5"></rect>
+            <rect x="3" y="13" width="8" height="8" rx="1.5"></rect>
+          </svg>
+          <span>Enviar à Colagem</span>
+        </button>
+
+        <!-- Close / Remove Current Screenshot from Workspace (Modo Captura Única) -->
         <button id="btn-close-active-image" class="btn btn-danger-soft hidden" title="Remover o print atual do espaço de trabalho (Voltar à tela inicial)">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
             <line x1="18" y1="6" x2="6" y2="18"></line>
@@ -368,7 +505,7 @@
           <span>Remover da Tela</span>
         </button>
 
-        <!-- Save Image As Button -->
+        <!-- Save Image As Button (Modo Captura Única) -->
         <button id="btn-save-as" class="btn btn-primary" title="Salvar imagem com novo nome e pasta (Ctrl+S)">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
@@ -378,13 +515,41 @@
           <span>Salvar Como</span>
         </button>
 
-        <!-- Quick Copy Image Button -->
+        <!-- Quick Copy Image Button (Modo Captura Única) -->
         <button id="btn-copy-clipboard" class="btn btn-secondary" title="Copiar imagem ativa para a área de transferência (Ctrl+C)">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <rect width="14" height="14" x="8" y="8" rx="2" ry="2"></rect>
             <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"></path>
           </svg>
           <span>Copiar</span>
+        </button>
+
+        <!-- BOTOES EXCLUSIVOS DO MODO COLAGEM / MESA LIVRE -->
+        <!-- Salvar Colagem como Novo Arquivo (Salva automaticamente na pasta de prints, adiciona no histórico e copia) -->
+        <button id="btn-save-collage-new" class="btn btn-primary btn-glow hidden" title="Salvar colagem como um novo arquivo no DeerPrint e copiar para o clipboard (Ctrl+S)">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+            <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+            <polyline points="17 21 17 13 7 13 7 21"></polyline>
+            <polyline points="7 3 7 8 15 8"></polyline>
+          </svg>
+          <span>Salvar Novo Arquivo</span>
+        </button>
+
+        <!-- Copiar Colagem Composta -->
+        <button id="btn-copy-collage" class="btn btn-secondary hidden" title="Copiar colagem completa para a área de transferência (Ctrl+C)">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect width="14" height="14" x="8" y="8" rx="2" ry="2"></rect>
+            <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"></path>
+          </svg>
+          <span>Copiar Colagem</span>
+        </button>
+
+        <!-- Salvar Colagem Como... (Diálogo de arquivo) -->
+        <button id="btn-save-collage-as" class="btn btn-secondary hidden" title="Salvar colagem escolhendo pasta e nome do arquivo...">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.9l-.82-1.2A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z"></path>
+          </svg>
+          <span>Salvar Como...</span>
         </button>
 
         <!-- Toggle History Sidebar -->
@@ -477,23 +642,34 @@
             <span>Atalho global de disparo:</span>
             <kbd id="empty-shortcut-badge" class="shortcut-hero-pill">F10</kbd>
           </div>
-          <button id="btn-empty-capture" class="btn btn-primary btn-lg btn-glow">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
-              <circle cx="12" cy="12" r="10"></circle>
-              <circle cx="12" cy="12" r="3" fill="currentColor"></circle>
-            </svg>
-            Capturar Tela Agora
-          </button>
+          <div class="empty-actions-row">
+            <button id="btn-empty-capture" class="btn btn-primary btn-lg btn-glow">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <circle cx="12" cy="12" r="3" fill="currentColor"></circle>
+              </svg>
+              Capturar Tela Agora
+            </button>
+            <button id="btn-empty-open-collage" class="btn btn-secondary btn-lg" title="Abrir Área Livre para Montagem de Colagens">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                <rect x="3" y="3" width="8" height="8" rx="1.5"></rect>
+                <rect x="13" y="3" width="8" height="5" rx="1.5"></rect>
+                <rect x="13" y="10" width="8" height="11" rx="1.5"></rect>
+                <rect x="3" y="13" width="8" height="8" rx="1.5"></rect>
+              </svg>
+              Mesa Livre (Colagem)
+            </button>
+          </div>
         </div>
 
-        <!-- Active Screenshot Canvas Wrapper -->
+        <!-- Active Screenshot Canvas Wrapper (Modo Captura Única) -->
         <div id="canvas-wrapper" class="canvas-wrapper hidden">
           <img id="active-image" alt="Captura ativa" draggable="false">
           <canvas id="annotation-canvas" class="annotation-canvas"></canvas>
           <textarea id="inline-text-editor" class="inline-text-editor hidden" rows="1" placeholder="Digite o texto..." draggable="false"></textarea>
         </div>
 
-        <!-- Floating Zoom & Fit Controls -->
+        <!-- Floating Zoom & Fit Controls (Modo Captura Única) -->
         <div id="viewport-controls" class="floating-controls hidden">
           <button id="btn-zoom-out" class="control-btn" title="Diminuir Zoom">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14"></path></svg>
@@ -507,6 +683,85 @@
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path></svg>
           </button>
           <button id="btn-actual-size" class="control-btn" title="Tamanho Real (100%)">1:1</button>
+        </div>
+
+        <!-- =============================================================== -->
+        <!-- FREEFORM COLLAGE WORKSPACE (Mesa Livre para Montar Colagens) -->
+        <!-- =============================================================== -->
+        <div id="collage-workspace" class="collage-workspace hidden">
+          <!-- Drop target indicator overlay -->
+          <div id="collage-drop-overlay" class="collage-drop-overlay hidden">
+            <div class="drop-overlay-box">
+              <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="7 10 12 15 17 10"></polyline>
+                <line x1="12" y1="15" x2="12" y2="3"></line>
+              </svg>
+              <h3>Solte o print aqui na mesa</h3>
+              <p>O print será posicionado exatamente aqui para sua colagem</p>
+            </div>
+          </div>
+
+          <!-- Free Surface that pans and zooms -->
+          <div id="collage-surface" class="collage-surface" data-bg="grid-dark">
+            <!-- Empty Placeholder inside Collage -->
+            <div id="collage-empty-hint" class="collage-empty-hint">
+              <div class="collage-empty-icon-wrap">
+                <svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                  <rect x="3" y="3" width="8" height="8" rx="2"></rect>
+                  <rect x="13" y="3" width="8" height="5" rx="1.5"></rect>
+                  <rect x="13" y="10" width="8" height="11" rx="2"></rect>
+                  <rect x="3" y="13" width="8" height="8" rx="1.5"></rect>
+                </svg>
+              </div>
+              <h2 class="collage-empty-title">Área de Trabalho Livre (Mesa de Colagens)</h2>
+              <p class="collage-empty-subtitle">
+                Arraste qualquer print do <strong>Histórico à direita 👉</strong> para esta área, cole da área de transferência com <strong>Ctrl+V</strong>, ou adicione imagens para montar sua composição livre.
+              </p>
+              <div class="collage-hero-actions">
+                <button id="btn-quick-paste" class="btn btn-primary btn-glow">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                    <rect width="14" height="14" x="8" y="8" rx="2" ry="2"></rect>
+                    <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"></path>
+                  </svg>
+                  Colar da Área de Transferência (Ctrl+V)
+                </button>
+                <button id="btn-quick-import" class="btn btn-secondary">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="17 8 12 3 7 8"></polyline>
+                    <line x1="12" y1="3" x2="12" y2="15"></line>
+                  </svg>
+                  Importar Imagem
+                </button>
+                <button id="btn-quick-add-recent" class="btn btn-secondary" title="Adicionar o print mais recente do histórico à colagem">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                    <path d="M12 5v14M5 12h14"></path>
+                  </svg>
+                  Adicionar Último Print
+                </button>
+              </div>
+            </div>
+
+            <!-- Items container where collage cards exist -->
+            <div id="collage-items-container" class="collage-items-container"></div>
+          </div>
+
+          <!-- Floating Zoom & Fit Controls para a Mesa Livre -->
+          <div id="collage-viewport-controls" class="floating-controls">
+            <button id="btn-collage-zoom-out" class="control-btn" title="Diminuir Zoom">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14"></path></svg>
+            </button>
+            <span id="collage-zoom-level" class="zoom-text">100%</span>
+            <button id="btn-collage-zoom-in" class="control-btn" title="Aumentar Zoom">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"></path></svg>
+            </button>
+            <div class="control-separator"></div>
+            <button id="btn-collage-fit" class="control-btn" title="Ajustar todos os prints na tela">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path></svg>
+            </button>
+            <button id="btn-collage-actual-size" class="control-btn" title="Centralizar e Tamanho Real (100%)">1:1</button>
+          </div>
         </div>
       </div>
 
@@ -531,6 +786,19 @@
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"></path></svg>
             </button>
           </div>
+        </div>
+
+        <!-- Dica de arrasto para a Mesa Livre -->
+        <div id="drawer-drag-hint" class="drawer-drag-hint">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="5 9 2 12 5 15"></polyline>
+            <polyline points="9 5 12 2 15 5"></polyline>
+            <polyline points="15 19 12 22 9 19"></polyline>
+            <polyline points="19 9 22 12 19 15"></polyline>
+            <line x1="2" y1="12" x2="22" y2="12"></line>
+            <line x1="12" y1="2" x2="12" y2="22"></line>
+          </svg>
+          <span>Arraste os prints para o centro da tela para montar colagens</span>
         </div>
 
         <div id="history-list" class="history-list">
@@ -864,7 +1132,17 @@
               <p>Use os controles no canto inferior direito para aplicar zoom de até 800% ou ajustar à tela.</p>
             </div>
 
-            <!-- Card 6: Salvar & Copiar -->
+            <!-- Card 6: Mesa Livre / Montagem de Colagens -->
+            <div class="help-card" style="border-color: rgba(184, 205, 167, 0.4);">
+              <div class="help-card-header">
+                <span class="help-step-icon">🧩</span>
+                <h3>Mesa Livre & Colagens</h3>
+              </div>
+              <p>Alterne para o modo <strong>Mesa Livre</strong> no topo esquerdo para criar composições e colagens livres com múltiplos prints.</p>
+              <p>Arraste prints do <strong>Histórico à direita 👉</strong> para o centro, redimensione pelas alças nos cantos, cole da área de transferência com <kbd class="shortcut-pill">Ctrl+V</kbd> e clique em <strong>Salvar Novo Arquivo</strong> para salvar a colagem como novo print.</p>
+            </div>
+
+            <!-- Card 7: Salvar & Copiar -->
             <div class="help-card">
               <div class="help-card-header">
                 <span class="help-step-icon">💾</span>
@@ -880,6 +1158,8 @@
             <h3 class="help-section-title">⌨️ Atalhos Rápidos do Teclado</h3>
             <div class="shortcuts-table-grid">
               <div class="shortcut-row"><kbd>F10</kbd><span>Capturar nova área da tela</span></div>
+              <div class="shortcut-row"><kbd>Ctrl + V</kbd><span>Colar imagem na Mesa de Colagem</span></div>
+              <div class="shortcut-row"><kbd>Ctrl + D</kbd><span>Duplicar print selecionado na mesa</span></div>
               <div class="shortcut-row"><kbd>V</kbd><span>Selecionar e Mover Elementos</span></div>
               <div class="shortcut-row"><kbd>R</kbd><span>Retângulo Vazado</span></div>
               <div class="shortcut-row"><kbd>U</kbd><span>Retângulo Arredondado</span></div>
@@ -893,10 +1173,10 @@
               <div class="shortcut-row"><kbd>H</kbd><span>Marca-Texto</span></div>
               <div class="shortcut-row"><kbd>T</kbd><span>Texto Livre</span></div>
               <div class="shortcut-row"><kbd>G</kbd><span>Desfoque do Vidro (Glass)</span></div>
-              <div class="shortcut-row"><kbd>Ctrl + C</kbd><span>Copiar print com anotações</span></div>
-              <div class="shortcut-row"><kbd>Ctrl + S</kbd><span>Salvar imagem no computador</span></div>
-              <div class="shortcut-row"><kbd>Ctrl + Z / Y</kbd><span>Desfazer / Refazer anotação</span></div>
-              <div class="shortcut-row"><kbd>Delete / Backspace</kbd><span>Excluir objeto selecionado</span></div>
+              <div class="shortcut-row"><kbd>Ctrl + C</kbd><span>Copiar imagem / colagem ativa</span></div>
+              <div class="shortcut-row"><kbd>Ctrl + S</kbd><span>Salvar imagem / nova colagem</span></div>
+              <div class="shortcut-row"><kbd>Ctrl + Z / Y</kbd><span>Desfazer / Refazer</span></div>
+              <div class="shortcut-row"><kbd>Delete / Backspace</kbd><span>Excluir objeto ou print selecionado</span></div>
             </div>
           </div>
         </div>

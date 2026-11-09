@@ -1,10 +1,30 @@
-const { autoUpdater } = require('electron-updater');
 const { app, ipcMain } = require('electron');
+
+let autoUpdater = null;
+function getAutoUpdater() {
+  if (!autoUpdater) {
+    try {
+      const updaterModule = require('electron-updater');
+      autoUpdater = updaterModule.autoUpdater;
+    } catch (e) {
+      console.warn('Auto-updater could not be loaded:', e);
+    }
+  }
+  return autoUpdater;
+}
+
+function getSafeVersion() {
+  try {
+    return (app && typeof app.getVersion === 'function') ? app.getVersion() : '3.1.0';
+  } catch (e) {
+    return '3.1.0';
+  }
+}
 
 let mainWindowRef = null;
 let lastUpdateStatus = {
   status: 'idle',
-  version: app.getVersion(),
+  version: getSafeVersion(),
   info: null,
   progress: null,
   error: null
@@ -31,20 +51,26 @@ function initUpdater(mainWindow, store) {
   }
   isInitialized = true;
 
+  const updater = getAutoUpdater();
+  if (!updater) {
+    console.warn('AutoUpdater indisponível neste ambiente.');
+    return;
+  }
+
   // Configurações do autoUpdater
-  autoUpdater.autoDownload = true;
-  autoUpdater.autoInstallOnAppQuit = true;
-  autoUpdater.allowPrerelease = false;
+  updater.autoDownload = true;
+  updater.autoInstallOnAppQuit = true;
+  updater.allowPrerelease = false;
 
   // Eventos do electron-updater
-  autoUpdater.on('checking-for-update', () => {
+  updater.on('checking-for-update', () => {
     sendStatusToWindow({
       status: 'checking',
       message: 'Buscando atualizações no GitHub Releases...'
     });
   });
 
-  autoUpdater.on('update-available', (info) => {
+  updater.on('update-available', (info) => {
     sendStatusToWindow({
       status: 'available',
       info: {
@@ -56,17 +82,17 @@ function initUpdater(mainWindow, store) {
     });
   });
 
-  autoUpdater.on('update-not-available', (info) => {
+  updater.on('update-not-available', (info) => {
     sendStatusToWindow({
       status: 'not-available',
       info: {
-        version: info ? info.version : app.getVersion()
+        version: info ? info.version : getSafeVersion()
       },
-      message: `Você já está na versão mais recente (v${app.getVersion()}).`
+      message: `Você já está na versão mais recente (v${getSafeVersion()}).`
     });
   });
 
-  autoUpdater.on('download-progress', (progressObj) => {
+  updater.on('download-progress', (progressObj) => {
     sendStatusToWindow({
       status: 'downloading',
       progress: {
@@ -79,7 +105,7 @@ function initUpdater(mainWindow, store) {
     });
   });
 
-  autoUpdater.on('update-downloaded', (info) => {
+  updater.on('update-downloaded', (info) => {
     sendStatusToWindow({
       status: 'downloaded',
       info: {
@@ -103,7 +129,7 @@ function initUpdater(mainWindow, store) {
     return cleanLine.length > 140 ? cleanLine.substring(0, 140) + '...' : cleanLine;
   }
 
-  autoUpdater.on('error', (err) => {
+  updater.on('error', (err) => {
     const cleanMsg = sanitizeUpdateError(err);
     sendStatusToWindow({
       status: 'error',
@@ -114,19 +140,19 @@ function initUpdater(mainWindow, store) {
 
   // IPC Handlers
   ipcMain.handle('updater:get-version', () => {
-    return app.getVersion();
+    return getSafeVersion();
   });
 
   ipcMain.handle('updater:get-status', () => {
-    return { ...lastUpdateStatus, version: app.getVersion() };
+    return { ...lastUpdateStatus, version: getSafeVersion() };
   });
 
   ipcMain.handle('updater:check', async () => {
     if (!app.isPackaged) {
       sendStatusToWindow({
         status: 'not-available',
-        info: { version: app.getVersion() },
-        message: `Modo de Desenvolvimento (v${app.getVersion()}). Para testar auto-update real, compile o instalador.`
+        info: { version: getSafeVersion() },
+        message: `Modo de Desenvolvimento (v${getSafeVersion()}). Para testar auto-update real, compile o instalador.`
       });
       return { success: true, dev: true };
     }
@@ -136,7 +162,8 @@ function initUpdater(mainWindow, store) {
         status: 'checking',
         message: 'Buscando atualizações...'
       });
-      const result = await autoUpdater.checkForUpdates();
+      const activeUpdater = getAutoUpdater();
+      const result = activeUpdater ? await activeUpdater.checkForUpdates() : null;
       return { success: true, result };
     } catch (err) {
       const cleanMsg = sanitizeUpdateError(err);
@@ -151,7 +178,10 @@ function initUpdater(mainWindow, store) {
 
   ipcMain.handle('updater:quit-and-install', () => {
     try {
-      autoUpdater.quitAndInstall(true, true);
+      const activeUpdater = getAutoUpdater();
+      if (activeUpdater) {
+        activeUpdater.quitAndInstall(true, true);
+      }
     } catch (err) {
       console.error('Erro ao instalar atualização:', err);
     }
@@ -161,7 +191,10 @@ function initUpdater(mainWindow, store) {
   const settings = store ? store.getSettings() : {};
   if (settings.autoCheckUpdates !== false && app.isPackaged) {
     setTimeout(() => {
-      autoUpdater.checkForUpdates().catch(() => {});
+      const activeUpdater = getAutoUpdater();
+      if (activeUpdater) {
+        activeUpdater.checkForUpdates().catch(() => {});
+      }
     }, 12000);
   }
 }

@@ -4,6 +4,17 @@ Todas as mudanças e lançamentos notáveis do **DeerPrint** são documentados n
 
 ---
 
+## [3.1.0] - 2026-11-09
+### 🧩 Área de Trabalho Livre (Mesa de Colagens de Prints)
+- **Mesa Livre de Colagem**: Novo modo de espaço de trabalho livre e expansivo com navegação panorâmica (Pan) e zoom infinito de 10% a 500% para criação e composição de colagens com múltiplos prints.
+- **Drag & Drop do Histórico para o Centro**: Arraste qualquer captura diretamente da gaveta lateral direita para o centro da mesa. O print é posicionado no ponto exato onde foi solto.
+- **Redimensionamento Preciso ("Diminuir e Aumentar")**: Alças em 8 direções nos cantos e bordas com preservação proporcional de aspecto em tempo real e etiqueta de dimensões milimétricas.
+- **Manipulação Completa de Elementos**: Movimentação livre, ordenação de camadas (trazer para frente / enviar para trás), rotação de 90° e duplicação rápida (`Ctrl+D`).
+- **Colar da Área de Transferência (`Ctrl+V`)**: Suporte instantâneo para colar prints e imagens copiadas diretamente para a mesa de colagem.
+- **Salvar como Novo Arquivo**: Botão "Salvar Novo Arquivo" em destaque com brilho neon que compõe a colagem em alta resolução, salva automaticamente na pasta de prints do DeerPrint, adiciona no topo do histórico e copia imediatamente para a área de transferência do Windows.
+- **Opções de Fundo da Mesa**: Alternância rápida entre Grade Escura com pontos sutis, Transparente (PNG sem fundo), Escuro Sólido, Claro/Branco e Gradiente Studio.
+- **Organização Automática**: Disposição em Grade Uniforme, Fileira Horizontal ou Coluna Vertical com 1 clique.
+
 ## [3.0.8] - 2026-09-04
 ### 🎯 Precisão de Desenho Livre & Posicionamento Exato do Texto
 - **Desenho Livre Sem Interferência**: Ferramentas de desenho (Seta, Retângulo, Caneta, Círculo, etc.) agora iniciam o desenho imediatamente a partir do ponto clicado, sem selecionar nem arrastar objetos existentes por acidente ao iniciar perto de uma seta ou quadrado.

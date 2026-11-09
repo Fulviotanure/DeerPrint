@@ -14,6 +14,45 @@ const btnCloseSettings = document.getElementById('btn-close-settings');
 const btnCancelSettings = document.getElementById('btn-cancel-settings');
 const btnSaveSettings = document.getElementById('btn-save-settings');
 
+// Freeform Collage Elements (Mesa Livre para Montar Colagens)
+const btnModeSingle = document.getElementById('btn-mode-single');
+const btnModeCollage = document.getElementById('btn-mode-collage');
+const collageToolbar = document.getElementById('collage-toolbar');
+const btnCollagePaste = document.getElementById('btn-collage-paste');
+const btnCollageImport = document.getElementById('btn-collage-import');
+const btnCollageBgToggle = document.getElementById('btn-collage-bg-toggle');
+const collageBgPopover = document.getElementById('collage-bg-popover');
+const collageBgPreviewSwatch = document.getElementById('collage-bg-preview-swatch');
+const btnCollageAlignToggle = document.getElementById('btn-collage-align-toggle');
+const collageAlignPopover = document.getElementById('collage-align-popover');
+const btnAlignGrid = document.getElementById('btn-align-grid');
+const btnAlignHorizontal = document.getElementById('btn-align-horizontal');
+const btnAlignVertical = document.getElementById('btn-align-vertical');
+const btnCollageClear = document.getElementById('btn-collage-clear');
+const collageItemsBadge = document.getElementById('collage-items-badge');
+
+const btnSendToCollage = document.getElementById('btn-send-to-collage');
+const btnSaveCollageNew = document.getElementById('btn-save-collage-new');
+const btnCopyCollage = document.getElementById('btn-copy-collage');
+const btnSaveCollageAs = document.getElementById('btn-save-collage-as');
+
+const collageWorkspace = document.getElementById('collage-workspace');
+const collageSurface = document.getElementById('collage-surface');
+const collageDropOverlay = document.getElementById('collage-drop-overlay');
+const collageEmptyHint = document.getElementById('collage-empty-hint');
+const collageItemsContainer = document.getElementById('collage-items-container');
+
+const btnCollageZoomIn = document.getElementById('btn-collage-zoom-in');
+const btnCollageZoomOut = document.getElementById('btn-collage-zoom-out');
+const btnCollageFit = document.getElementById('btn-collage-fit');
+const btnCollageActualSize = document.getElementById('btn-collage-actual-size');
+const collageZoomLevelText = document.getElementById('collage-zoom-level');
+
+const btnQuickPaste = document.getElementById('btn-quick-paste');
+const btnQuickImport = document.getElementById('btn-quick-import');
+const btnQuickAddRecent = document.getElementById('btn-quick-add-recent');
+const btnEmptyOpenCollage = document.getElementById('btn-empty-open-collage');
+
 // Badges & Labels
 const headerShortcutBadge = document.getElementById('header-shortcut-badge');
 const emptyShortcutBadge = document.getElementById('empty-shortcut-badge');
@@ -219,6 +258,16 @@ let state = {
   isRecordingHotkey: false,
   tempHotkey: '',
 
+  // Workspace Mode & Collage State (Mesa Livre para Montar Colagens)
+  workspaceMode: 'single', // 'single' | 'collage'
+  collageItems: [],
+  selectedCollageItemId: null,
+  collageZoom: 1.0,
+  collagePan: { x: 0, y: 0 },
+  collageBg: 'grid-dark',
+  collageActiveHandle: null,
+  collageDragInfo: null,
+
   // Variables / Tags list
   variables: ['Importante', 'Verificar', 'Aprovado', 'Atenção', 'Corrigir'],
 
@@ -254,6 +303,7 @@ async function initApp() {
   await loadHistory();
   setupEventListeners();
   setupAnnotationEngine();
+  setupCollageWorkspace();
   setupVariablesSidebar();
   setupAutoUpdaterUI();
 
@@ -700,6 +750,9 @@ function renderHistoryList() {
         </div>
       </div>
       <div class="history-actions">
+        <button class="history-action-btn add-btn" title="Adicionar à Mesa Livre de Colagem">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 5v14M5 12h14"></path></svg>
+        </button>
         <button class="history-action-btn copy-btn" title="Copiar Imagem">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"></rect><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"></path></svg>
         </button>
@@ -712,10 +765,55 @@ function renderHistoryList() {
       </div>
     `;
 
+    // HTML5 Drag & Drop do card de print para a mesa livre
+    card.setAttribute('draggable', 'true');
+    card.addEventListener('dragstart', (e) => {
+      const payload = {
+        type: 'deerprint-history-item',
+        id: item.id,
+        src: imgSrc,
+        filePath: item.filePath,
+        fileName: item.fileName,
+        width: item.width,
+        height: item.height
+      };
+      e.dataTransfer.setData('application/json', JSON.stringify(payload));
+      e.dataTransfer.setData('text/plain', imgSrc);
+      e.dataTransfer.effectAllowed = 'copy';
+      card.classList.add('is-dragging');
+    });
+
+    card.addEventListener('dragend', () => {
+      card.classList.remove('is-dragging');
+    });
+
     card.addEventListener('click', async (e) => {
       if (e.target.closest('.history-actions')) return;
+      if (state.workspaceMode === 'collage') {
+        addPrintToCollage({
+          id: item.id,
+          src: imgSrc,
+          filePath: item.filePath,
+          fileName: item.fileName,
+          width: item.width,
+          height: item.height
+        }, false);
+        return;
+      }
       if (state.currentScreenshot && state.currentScreenshot.id === item.id) return;
       await loadScreenshotToEditor(item);
+    });
+
+    card.querySelector('.add-btn').addEventListener('click', (e) => {
+      e.stopPropagation();
+      addPrintToCollage({
+        id: item.id,
+        src: imgSrc,
+        filePath: item.filePath,
+        fileName: item.fileName,
+        width: item.width,
+        height: item.height
+      }, true);
     });
 
     card.querySelector('.copy-btn').addEventListener('click', (e) => {
@@ -769,6 +867,7 @@ async function clearWorkspace() {
   viewportControls.classList.add('hidden');
   fileInfoGroup.classList.add('hidden');
   btnCloseActiveImage.classList.add('hidden');
+  if (btnSendToCollage) btnSendToCollage.classList.add('hidden');
 
   statusText.textContent = 'Pronto';
   updateUndoRedoUI();
@@ -817,10 +916,26 @@ async function handleNewScreenshot(data) {
     state.history.unshift(data);
   }
   renderHistoryList();
+
+  if (state.workspaceMode === 'collage') {
+    addPrintToCollage(data, false);
+    showToast('✓ Imagem capturada e adicionada à mesa de colagem!');
+    return;
+  }
+
   showToast('✓ Imagem capturada em alta resolução!');
 }
 
 async function loadScreenshotToEditor(item, imageSrc) {
+  // Se estiver no modo colagem, adiciona o print à mesa
+  if (state.workspaceMode === 'collage') {
+    const bust = item.cacheBust || (item.timestamp ? new Date(item.timestamp).getTime() : Date.now());
+    const cleanPath = item.filePath.replace(/\\/g, '/');
+    const imgSrc = `file:///${cleanPath}?t=${bust}`;
+    addPrintToCollage({ ...item, src: imgSrc }, false);
+    return;
+  }
+
   // Salva qualquer edição pendente no print atual antes de trocar de arquivo
   if (state.currentScreenshot && state.currentScreenshot.id !== item.id) {
     await flushAutoSave();
@@ -848,6 +963,7 @@ async function loadScreenshotToEditor(item, imageSrc) {
   viewportControls.classList.remove('hidden');
   fileInfoGroup.classList.remove('hidden');
   btnCloseActiveImage.classList.remove('hidden');
+  if (btnSendToCollage) btnSendToCollage.classList.remove('hidden');
 
   metaFilename.textContent = item.fileName;
   metaFilename.title = item.filePath;
@@ -2537,6 +2653,1115 @@ function formatHotkeyDisplay(accelerator) {
 }
 
 // ==========================================================================
+// FREEFORM COLLAGE WORKSPACE ENGINE (Mesa Livre para Montar Colagens)
+// ==========================================================================
+
+function switchWorkspaceMode(mode) {
+  state.workspaceMode = mode;
+
+  if (mode === 'collage') {
+    if (btnModeCollage) btnModeCollage.classList.add('active');
+    if (btnModeSingle) btnModeSingle.classList.remove('active');
+
+    // Toolbars
+    const annotationToolbar = document.querySelector('.annotation-toolbar');
+    if (annotationToolbar) annotationToolbar.classList.add('hidden');
+    const compactToolsWrapper = document.querySelector('.tools-compact-wrapper');
+    if (compactToolsWrapper) compactToolsWrapper.classList.add('hidden');
+    if (collageToolbar) collageToolbar.classList.remove('hidden');
+
+    // Header actions
+    if (btnSaveAs) btnSaveAs.classList.add('hidden');
+    if (btnCopyClipboard) btnCopyClipboard.classList.add('hidden');
+    if (btnCloseActiveImage) btnCloseActiveImage.classList.add('hidden');
+    if (btnSendToCollage) btnSendToCollage.classList.add('hidden');
+    if (btnSaveCollageNew) btnSaveCollageNew.classList.remove('hidden');
+    if (btnCopyCollage) btnCopyCollage.classList.remove('hidden');
+    if (btnSaveCollageAs) btnSaveCollageAs.classList.remove('hidden');
+
+    // Viewport
+    if (emptyState) emptyState.classList.add('hidden');
+    if (canvasWrapper) canvasWrapper.classList.add('hidden');
+    if (viewportControls) viewportControls.classList.add('hidden');
+    if (fileInfoGroup) fileInfoGroup.classList.add('hidden');
+    if (collageWorkspace) collageWorkspace.classList.remove('hidden');
+
+    // Automatically expand History Drawer so user can easily drag prints
+    if (historyDrawer && historyDrawer.classList.contains('collapsed')) {
+      historyDrawer.classList.remove('collapsed');
+      if (btnToggleHistory) btnToggleHistory.classList.add('active');
+    }
+
+    renderCollageItems();
+    updateCollageSurfaceTransform();
+    updateCollageBadge();
+  } else {
+    if (btnModeSingle) btnModeSingle.classList.add('active');
+    if (btnModeCollage) btnModeCollage.classList.remove('active');
+
+    // Toolbars
+    const annotationToolbar = document.querySelector('.annotation-toolbar');
+    if (annotationToolbar) annotationToolbar.classList.remove('hidden');
+    const compactToolsWrapper = document.querySelector('.tools-compact-wrapper');
+    if (compactToolsWrapper) compactToolsWrapper.classList.remove('hidden');
+    if (collageToolbar) collageToolbar.classList.add('hidden');
+
+    // Header actions
+    if (btnSaveCollageNew) btnSaveCollageNew.classList.add('hidden');
+    if (btnCopyCollage) btnCopyCollage.classList.add('hidden');
+    if (btnSaveCollageAs) btnSaveCollageAs.classList.add('hidden');
+    if (btnSaveAs) btnSaveAs.classList.remove('hidden');
+    if (btnCopyClipboard) btnCopyClipboard.classList.remove('hidden');
+
+    if (collageWorkspace) collageWorkspace.classList.add('hidden');
+
+    if (state.currentScreenshot) {
+      if (emptyState) emptyState.classList.add('hidden');
+      if (canvasWrapper) canvasWrapper.classList.remove('hidden');
+      if (viewportControls) viewportControls.classList.remove('hidden');
+      if (fileInfoGroup) fileInfoGroup.classList.remove('hidden');
+      if (btnCloseActiveImage) btnCloseActiveImage.classList.remove('hidden');
+      if (btnSendToCollage) btnSendToCollage.classList.remove('hidden');
+    } else {
+      if (emptyState) emptyState.classList.remove('hidden');
+      if (canvasWrapper) canvasWrapper.classList.add('hidden');
+      if (viewportControls) viewportControls.classList.add('hidden');
+      if (fileInfoGroup) fileInfoGroup.classList.add('hidden');
+      if (btnCloseActiveImage) btnCloseActiveImage.classList.add('hidden');
+      if (btnSendToCollage) btnSendToCollage.classList.add('hidden');
+    }
+  }
+}
+
+function updateCollageBadge() {
+  if (!collageItemsBadge) return;
+  const count = state.collageItems.length;
+  collageItemsBadge.textContent = count === 1 ? '1 print na mesa' : `${count} prints na mesa`;
+}
+
+function updateCollageSurfaceTransform() {
+  if (!collageSurface) return;
+  collageSurface.style.transform = `translate(${state.collagePan.x}px, ${state.collagePan.y}px) scale(${state.collageZoom})`;
+  if (collageZoomLevelText) {
+    collageZoomLevelText.textContent = `${Math.round(state.collageZoom * 100)}%`;
+  }
+}
+
+function updateCollageZoom(newZoom) {
+  state.collageZoom = Math.max(0.1, Math.min(newZoom, 5.0));
+  updateCollageSurfaceTransform();
+}
+
+function screenToCollageCoordinates(clientX, clientY) {
+  if (!collageWorkspace) return { x: 2500, y: 2500 };
+  const rect = collageWorkspace.getBoundingClientRect();
+  const viewportCenterX = rect.left + rect.width / 2;
+  const viewportCenterY = rect.top + rect.height / 2;
+
+  const dx = (clientX - viewportCenterX - state.collagePan.x) / state.collageZoom;
+  const dy = (clientY - viewportCenterY - state.collagePan.y) / state.collageZoom;
+
+  return {
+    x: 2500 + dx,
+    y: 2500 + dy
+  };
+}
+
+function addPrintToCollage(item, switchMode = true, targetX = null, targetY = null) {
+  const naturalW = item.width || 800;
+  const naturalH = item.height || 600;
+  const aspect = naturalW / naturalH;
+
+  let dispW = 540;
+  let dispH = Math.round(dispW / aspect);
+  if (dispH > 440) {
+    dispH = 440;
+    dispW = Math.round(dispH * aspect);
+  }
+
+  const cascadeOffset = (state.collageItems.length % 8) * 32;
+  const posX = targetX !== null ? Math.round(targetX - dispW / 2) : Math.round(2500 - dispW / 2 + cascadeOffset);
+  const posY = targetY !== null ? Math.round(targetY - dispH / 2) : Math.round(2500 - dispH / 2 + cascadeOffset);
+
+  const maxZ = state.collageItems.reduce((max, it) => Math.max(max, it.zIndex || 1), 0);
+
+  const collageItem = {
+    id: 'citem_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5),
+    src: item.src || item.dataUrl || (item.filePath ? `file:///${item.filePath.replace(/\\/g, '/')}` : ''),
+    filePath: item.filePath || '',
+    fileName: item.fileName || 'print.png',
+    x: posX,
+    y: posY,
+    width: dispW,
+    height: dispH,
+    naturalWidth: naturalW,
+    naturalHeight: naturalH,
+    rotation: 0,
+    zIndex: maxZ + 1
+  };
+
+  state.collageItems.push(collageItem);
+  state.selectedCollageItemId = collageItem.id;
+
+  if (switchMode && state.workspaceMode !== 'collage') {
+    switchWorkspaceMode('collage');
+  } else {
+    renderCollageItems();
+    updateCollageBadge();
+  }
+
+  showToast(`Print adicionado à mesa: ${collageItem.fileName}`);
+}
+
+function renderCollageItems() {
+  if (!collageItemsContainer) return;
+  collageItemsContainer.innerHTML = '';
+
+  if (state.collageItems.length === 0) {
+    if (collageEmptyHint) collageEmptyHint.classList.remove('hidden');
+    return;
+  } else {
+    if (collageEmptyHint) collageEmptyHint.classList.add('hidden');
+  }
+
+  state.collageItems.forEach((item) => {
+    const isSelected = item.id === state.selectedCollageItemId;
+    const el = document.createElement('div');
+    el.className = `collage-item ${isSelected ? 'is-selected' : ''}`;
+    el.dataset.id = item.id;
+    el.style.left = `${item.x}px`;
+    el.style.top = `${item.y}px`;
+    el.style.width = `${item.width}px`;
+    el.style.height = `${item.height}px`;
+    el.style.zIndex = item.zIndex || 1;
+    el.style.transform = item.rotation ? `rotate(${item.rotation}deg)` : '';
+
+    const img = document.createElement('img');
+    img.className = 'collage-item-img';
+    img.src = item.src;
+    img.draggable = false;
+    img.alt = item.fileName || 'Print';
+    el.appendChild(img);
+
+    if (isSelected) {
+      const bar = document.createElement('div');
+      bar.className = 'collage-item-bar';
+      bar.innerHTML = `
+        <button class="item-bar-btn btn-layer-up" title="Trazer para Frente">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="m18 15-6-6-6 6"></path></svg>
+        </button>
+        <button class="item-bar-btn btn-layer-down" title="Enviar para Trás">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="m6 9 6 6 6-6"></path></svg>
+        </button>
+        <button class="item-bar-btn btn-duplicate-item" title="Duplicar Print (Ctrl+D)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"></rect><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"></path></svg>
+        </button>
+        <button class="item-bar-btn btn-rotate-item" title="Girar 90°">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"></path><polyline points="21 3 21 8 16 8"></polyline></svg>
+        </button>
+        <button class="item-bar-btn btn-delete-item" title="Remover da Colagem (Delete)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+        </button>
+        <span class="item-bar-dim">${Math.round(item.width)} × ${Math.round(item.height)} px</span>
+      `;
+
+      bar.querySelector('.btn-layer-up').addEventListener('click', (e) => {
+        e.stopPropagation();
+        bringCollageItemToFront(item.id);
+      });
+      bar.querySelector('.btn-layer-down').addEventListener('click', (e) => {
+        e.stopPropagation();
+        sendCollageItemToBack(item.id);
+      });
+      bar.querySelector('.btn-duplicate-item').addEventListener('click', (e) => {
+        e.stopPropagation();
+        duplicateCollageItem(item.id);
+      });
+      bar.querySelector('.btn-rotate-item').addEventListener('click', (e) => {
+        e.stopPropagation();
+        rotateCollageItem(item.id);
+      });
+      bar.querySelector('.btn-delete-item').addEventListener('click', (e) => {
+        e.stopPropagation();
+        deleteCollageItem(item.id);
+      });
+
+      el.appendChild(bar);
+
+      ['nw', 'ne', 'se', 'sw', 'n', 's', 'e', 'w'].forEach(dir => {
+        const h = document.createElement('div');
+        h.className = `collage-resize-handle handle-${dir}`;
+        h.dataset.handle = dir;
+        el.appendChild(h);
+      });
+    }
+
+    collageItemsContainer.appendChild(el);
+  });
+}
+
+function bringCollageItemToFront(id) {
+  const item = state.collageItems.find(it => it.id === id);
+  if (!item) return;
+  const maxZ = state.collageItems.reduce((max, it) => Math.max(max, it.zIndex || 1), 0);
+  item.zIndex = maxZ + 1;
+  renderCollageItems();
+}
+
+function sendCollageItemToBack(id) {
+  const item = state.collageItems.find(it => it.id === id);
+  if (!item) return;
+  const minZ = state.collageItems.reduce((min, it) => Math.min(min, it.zIndex || 1), 1);
+  item.zIndex = Math.max(1, minZ - 1);
+  renderCollageItems();
+}
+
+function duplicateCollageItem(id) {
+  const item = state.collageItems.find(it => it.id === id);
+  if (!item) return;
+  const maxZ = state.collageItems.reduce((max, it) => Math.max(max, it.zIndex || 1), 0);
+  const clone = {
+    ...item,
+    id: 'citem_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5),
+    x: item.x + 30,
+    y: item.y + 30,
+    zIndex: maxZ + 1
+  };
+  state.collageItems.push(clone);
+  state.selectedCollageItemId = clone.id;
+  renderCollageItems();
+  updateCollageBadge();
+  showToast('Print duplicado.');
+}
+
+function rotateCollageItem(id) {
+  const item = state.collageItems.find(it => it.id === id);
+  if (!item) return;
+  item.rotation = ((item.rotation || 0) + 90) % 360;
+  renderCollageItems();
+}
+
+function deleteCollageItem(id) {
+  state.collageItems = state.collageItems.filter(it => it.id !== id);
+  if (state.selectedCollageItemId === id) {
+    state.selectedCollageItemId = null;
+  }
+  renderCollageItems();
+  updateCollageBadge();
+  showToast('Print removido da mesa.');
+}
+
+function alignCollageItems(type) {
+  if (state.collageItems.length === 0) return;
+
+  const count = state.collageItems.length;
+  const gap = 24;
+
+  if (type === 'horizontal') {
+    let currentX = 2500 - (state.collageItems.reduce((acc, it) => acc + it.width, 0) + (count - 1) * gap) / 2;
+    state.collageItems.forEach(it => {
+      it.x = Math.round(currentX);
+      it.y = Math.round(2500 - it.height / 2);
+      currentX += it.width + gap;
+    });
+  } else if (type === 'vertical') {
+    let currentY = 2500 - (state.collageItems.reduce((acc, it) => acc + it.height, 0) + (count - 1) * gap) / 2;
+    state.collageItems.forEach(it => {
+      it.x = Math.round(2500 - it.width / 2);
+      it.y = Math.round(currentY);
+      currentY += it.height + gap;
+    });
+  } else {
+    // Grid alignment
+    const cols = Math.ceil(Math.sqrt(count));
+    let maxColWidth = 0;
+    let maxRowHeight = 0;
+    state.collageItems.forEach(it => {
+      if (it.width > maxColWidth) maxColWidth = it.width;
+      if (it.height > maxRowHeight) maxRowHeight = it.height;
+    });
+
+    const totalGridW = cols * maxColWidth + (cols - 1) * gap;
+    const startX = 2500 - totalGridW / 2;
+    const startY = 2500 - (Math.ceil(count / cols) * maxRowHeight + (Math.ceil(count / cols) - 1) * gap) / 2;
+
+    state.collageItems.forEach((it, idx) => {
+      const col = idx % cols;
+      const row = Math.floor(idx / cols);
+      it.x = Math.round(startX + col * (maxColWidth + gap));
+      it.y = Math.round(startY + row * (maxRowHeight + gap));
+    });
+  }
+
+  renderCollageItems();
+  fitCollageView();
+  showToast('Prints organizados automaticamente.');
+}
+
+function fitCollageView() {
+  if (state.collageItems.length === 0) {
+    state.collageZoom = 1.0;
+    state.collagePan = { x: 0, y: 0 };
+    updateCollageSurfaceTransform();
+    return;
+  }
+
+  let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+  state.collageItems.forEach(it => {
+    minX = Math.min(minX, it.x);
+    minY = Math.min(minY, it.y);
+    maxX = Math.max(maxX, it.x + it.width);
+    maxY = Math.max(maxY, it.y + it.height);
+  });
+
+  const rect = collageWorkspace.getBoundingClientRect();
+  const padding = 80;
+  const boundsW = (maxX - minX) + padding * 2;
+  const boundsH = (maxY - minY) + padding * 2;
+
+  const scaleX = rect.width / boundsW;
+  const scaleY = rect.height / boundsH;
+  const newZoom = Math.max(0.15, Math.min(Math.min(scaleX, scaleY), 1.5));
+
+  const itemsCenterX = minX + (maxX - minX) / 2;
+  const itemsCenterY = minY + (maxY - minY) / 2;
+
+  state.collageZoom = newZoom;
+  state.collagePan = {
+    x: Math.round((2500 - itemsCenterX) * newZoom),
+    y: Math.round((2500 - itemsCenterY) * newZoom)
+  };
+
+  updateCollageSurfaceTransform();
+}
+
+function loadImagePromise(src) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => resolve(img);
+    img.onerror = (e) => reject(e);
+    img.src = src;
+  });
+}
+
+async function generateCollageCompositeDataUrl() {
+  if (state.collageItems.length === 0) return null;
+
+  let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+  state.collageItems.forEach(item => {
+    minX = Math.min(minX, item.x);
+    minY = Math.min(minY, item.y);
+    maxX = Math.max(maxX, item.x + item.width);
+    maxY = Math.max(maxY, item.y + item.height);
+  });
+
+  const padding = 48;
+  const contentW = Math.round(maxX - minX + (padding * 2));
+  const contentH = Math.round(maxY - minY + (padding * 2));
+
+  const canvas = document.createElement('canvas');
+  canvas.width = contentW;
+  canvas.height = contentH;
+  const ctx = canvas.getContext('2d');
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = 'high';
+
+  // 1. Background
+  if (state.collageBg === 'transparent') {
+    ctx.clearRect(0, 0, contentW, contentH);
+  } else if (state.collageBg === 'solid-dark') {
+    ctx.fillStyle = '#0d100e';
+    ctx.fillRect(0, 0, contentW, contentH);
+  } else if (state.collageBg === 'solid-light') {
+    ctx.fillStyle = '#f8fafc';
+    ctx.fillRect(0, 0, contentW, contentH);
+  } else if (state.collageBg === 'gradient-sylvan') {
+    const grad = ctx.createLinearGradient(0, 0, contentW, contentH);
+    grad.addColorStop(0, '#27372b');
+    grad.addColorStop(1, '#111814');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, contentW, contentH);
+  } else {
+    ctx.fillStyle = '#121412';
+    ctx.fillRect(0, 0, contentW, contentH);
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.16)';
+    const dotSpacing = 24;
+    for (let x = 12; x < contentW; x += dotSpacing) {
+      for (let y = 12; y < contentH; y += dotSpacing) {
+        ctx.beginPath();
+        ctx.arc(x, y, 1.2, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+  }
+
+  // 2. Sort by zIndex
+  const sorted = [...state.collageItems].sort((a, b) => (a.zIndex || 1) - (b.zIndex || 1));
+
+  // 3. Draw items with shadow & rounded clipping
+  for (const item of sorted) {
+    const targetX = item.x - minX + padding;
+    const targetY = item.y - minY + padding;
+    const w = item.width;
+    const h = item.height;
+    const rot = (item.rotation || 0) * Math.PI / 180;
+
+    ctx.save();
+    ctx.translate(targetX + w / 2, targetY + h / 2);
+    if (rot !== 0) ctx.rotate(rot);
+
+    ctx.shadowColor = 'rgba(0, 0, 0, 0.45)';
+    ctx.shadowBlur = 24;
+    ctx.shadowOffsetX = 0;
+    ctx.shadowOffsetY = 10;
+
+    const rad = 8;
+    ctx.beginPath();
+    ctx.roundRect(-w / 2, -h / 2, w, h, rad);
+    ctx.fillStyle = '#1e2421';
+    ctx.fill();
+
+    ctx.shadowColor = 'transparent';
+    ctx.save();
+    ctx.clip();
+
+    try {
+      const imgObj = await loadImagePromise(item.src);
+      ctx.drawImage(imgObj, -w / 2, -h / 2, w, h);
+    } catch (e) {
+      console.warn('Erro ao desenhar imagem na colagem:', e);
+    }
+    ctx.restore();
+
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+
+    ctx.restore();
+  }
+
+  return canvas.toDataURL('image/png');
+}
+
+async function saveCollageAsNewFile(isSaveAs = false) {
+  if (state.collageItems.length === 0) {
+    showToast('A mesa está vazia. Adicione prints para salvar.');
+    return;
+  }
+
+  statusText.textContent = 'Renderizando colagem...';
+
+  try {
+    const dataUrl = await generateCollageCompositeDataUrl();
+    if (!dataUrl) return;
+
+    const now = new Date();
+    const pad = n => String(n).padStart(2, '0');
+    const timestamp = `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}_${pad(now.getHours())}-${pad(now.getMinutes())}-${pad(now.getSeconds())}`;
+    const defaultName = `colagem_${timestamp}.png`;
+
+    if (isSaveAs) {
+      const res = await window.electronAPI.saveImageAs(dataUrl, defaultName);
+      if (res && res.success) {
+        showToast(`✓ Colagem salva como: ${res.fileName}`);
+        statusText.textContent = 'Pronto';
+      }
+    } else {
+      const res = await window.electronAPI.saveNewCollage(dataUrl, defaultName);
+      if (res && res.success) {
+        showToast(`✓ Colagem salva como novo arquivo (${res.fileName}) e copiada!`);
+        statusText.textContent = 'Colagem salva';
+        await loadHistory();
+      } else {
+        showToast(`Erro ao salvar colagem: ${res ? res.error : 'Erro desconhecido'}`);
+        statusText.textContent = 'Erro ao salvar';
+      }
+    }
+  } catch (err) {
+    console.error('Erro ao salvar colagem:', err);
+    showToast('Erro ao processar e salvar a colagem.');
+    statusText.textContent = 'Pronto';
+  }
+}
+
+async function copyCollageToClipboard() {
+  if (state.collageItems.length === 0) {
+    showToast('A mesa está vazia. Adicione prints para copiar.');
+    return;
+  }
+
+  try {
+    const dataUrl = await generateCollageCompositeDataUrl();
+    if (dataUrl) {
+      await window.electronAPI.copyImageToClipboard(dataUrl);
+      showToast('✓ Colagem copiada para a área de transferência!');
+    }
+  } catch (err) {
+    console.error('Erro ao copiar colagem:', err);
+    showToast('Erro ao copiar colagem.');
+  }
+}
+
+async function pasteFromClipboardToCollage() {
+  try {
+    const res = await window.electronAPI.getClipboardImage();
+    if (res && res.success && res.dataUrl) {
+      addPrintToCollage({
+        src: res.dataUrl,
+        width: res.size ? res.size.width : 800,
+        height: res.size ? res.size.height : 600,
+        fileName: `print_clipboard_${Date.now()}.png`
+      }, true);
+    } else {
+      showToast('A área de transferência não contém imagem. Pressione PrintScreen ou copie uma imagem primeiro.');
+    }
+  } catch (err) {
+    console.error('Erro ao colar print:', err);
+    showToast('Erro ao ler print da área de transferência.');
+  }
+}
+
+async function sendActiveScreenshotToCollage() {
+  if (!state.currentScreenshot) {
+    showToast('Nenhum print aberto para enviar.');
+    return;
+  }
+
+  const compositeDataUrl = await renderCompositeDataUrl();
+  addPrintToCollage({
+    src: compositeDataUrl,
+    filePath: state.currentScreenshot.filePath,
+    fileName: state.currentScreenshot.fileName,
+    width: activeImage.naturalWidth || 800,
+    height: activeImage.naturalHeight || 600
+  }, true);
+}
+
+function setupCollageWorkspace() {
+  // Mode switcher tabs
+  if (btnModeSingle) {
+    btnModeSingle.addEventListener('click', () => switchWorkspaceMode('single'));
+  }
+  if (btnModeCollage) {
+    btnModeCollage.addEventListener('click', () => switchWorkspaceMode('collage'));
+  }
+  if (btnEmptyOpenCollage) {
+    btnEmptyOpenCollage.addEventListener('click', () => switchWorkspaceMode('collage'));
+  }
+
+  // Header collage action buttons
+  if (btnSendToCollage) {
+    btnSendToCollage.addEventListener('click', sendActiveScreenshotToCollage);
+  }
+  if (btnSaveCollageNew) {
+    btnSaveCollageNew.addEventListener('click', () => saveCollageAsNewFile(false));
+  }
+  if (btnSaveCollageAs) {
+    btnSaveCollageAs.addEventListener('click', () => saveCollageAsNewFile(true));
+  }
+  if (btnCopyCollage) {
+    btnCopyCollage.addEventListener('click', copyCollageToClipboard);
+  }
+
+  // Toolbar buttons
+  if (btnCollagePaste) {
+    btnCollagePaste.addEventListener('click', pasteFromClipboardToCollage);
+  }
+  if (btnQuickPaste) {
+    btnQuickPaste.addEventListener('click', pasteFromClipboardToCollage);
+  }
+  if (btnCollageImport) {
+    btnCollageImport.addEventListener('click', async () => {
+      const res = await window.electronAPI.selectImageFile();
+      if (res && res.success) {
+        addPrintToCollage({
+          src: res.dataUrl,
+          filePath: res.filePath,
+          fileName: res.fileName,
+          width: res.size ? res.size.width : 800,
+          height: res.size ? res.size.height : 600
+        }, true);
+      }
+    });
+  }
+  if (btnQuickImport) {
+    btnQuickImport.addEventListener('click', async () => {
+      const res = await window.electronAPI.selectImageFile();
+      if (res && res.success) {
+        addPrintToCollage({
+          src: res.dataUrl,
+          filePath: res.filePath,
+          fileName: res.fileName,
+          width: res.size ? res.size.width : 800,
+          height: res.size ? res.size.height : 600
+        }, true);
+      }
+    });
+  }
+  if (btnQuickAddRecent) {
+    btnQuickAddRecent.addEventListener('click', () => {
+      if (state.history.length > 0) {
+        const item = state.history[0];
+        const bust = item.cacheBust || (item.timestamp ? new Date(item.timestamp).getTime() : Date.now());
+        const cleanPath = item.filePath.replace(/\\/g, '/');
+        const imgSrc = `file:///${cleanPath}?t=${bust}`;
+        addPrintToCollage({ ...item, src: imgSrc }, true);
+      } else {
+        showToast('Nenhum print recente no histórico.');
+      }
+    });
+  }
+
+  if (btnCollageClear) {
+    btnCollageClear.addEventListener('click', () => {
+      if (state.collageItems.length === 0) return;
+      if (confirm('Deseja limpar todos os prints da mesa de colagem?')) {
+        state.collageItems = [];
+        state.selectedCollageItemId = null;
+        renderCollageItems();
+        updateCollageBadge();
+        showToast('Mesa de colagem limpa.');
+      }
+    });
+  }
+
+  // Background popover
+  if (btnCollageBgToggle && collageBgPopover) {
+    btnCollageBgToggle.addEventListener('click', (e) => {
+      e.stopPropagation();
+      collageBgPopover.classList.toggle('hidden');
+      if (collageAlignPopover) collageAlignPopover.classList.add('hidden');
+    });
+
+    document.querySelectorAll('.bg-opt-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.bg-opt-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        const bg = btn.dataset.bg;
+        state.collageBg = bg;
+        if (collageSurface) collageSurface.setAttribute('data-bg', bg);
+        if (collageBgPreviewSwatch) {
+          collageBgPreviewSwatch.className = `bg-preview-swatch bg-sample-${bg.replace('grid-', 'grid-').replace('gradient-sylvan', 'gradient').replace('solid-', '').replace('transparent', 'transp')}`;
+        }
+        collageBgPopover.classList.add('hidden');
+      });
+    });
+  }
+
+  // Alignment popover
+  if (btnCollageAlignToggle && collageAlignPopover) {
+    btnCollageAlignToggle.addEventListener('click', (e) => {
+      e.stopPropagation();
+      collageAlignPopover.classList.toggle('hidden');
+      if (collageBgPopover) collageBgPopover.classList.add('hidden');
+    });
+
+    if (btnAlignGrid) {
+      btnAlignGrid.addEventListener('click', () => {
+        alignCollageItems('grid');
+        collageAlignPopover.classList.add('hidden');
+      });
+    }
+    if (btnAlignHorizontal) {
+      btnAlignHorizontal.addEventListener('click', () => {
+        alignCollageItems('horizontal');
+        collageAlignPopover.classList.add('hidden');
+      });
+    }
+    if (btnAlignVertical) {
+      btnAlignVertical.addEventListener('click', () => {
+        alignCollageItems('vertical');
+        collageAlignPopover.classList.add('hidden');
+      });
+    }
+  }
+
+  // Close popovers on outside click
+  window.addEventListener('click', (e) => {
+    if (collageBgPopover && !e.target.closest('.collage-bg-wrapper')) {
+      collageBgPopover.classList.add('hidden');
+    }
+    if (collageAlignPopover && !e.target.closest('.collage-align-wrapper')) {
+      collageAlignPopover.classList.add('hidden');
+    }
+  });
+
+  // Collage Zoom Controls
+  if (btnCollageZoomIn) {
+    btnCollageZoomIn.addEventListener('click', () => updateCollageZoom(state.collageZoom + 0.15));
+  }
+  if (btnCollageZoomOut) {
+    btnCollageZoomOut.addEventListener('click', () => updateCollageZoom(state.collageZoom - 0.15));
+  }
+  if (btnCollageFit) {
+    btnCollageFit.addEventListener('click', fitCollageView);
+  }
+  if (btnCollageActualSize) {
+    btnCollageActualSize.addEventListener('click', () => {
+      state.collageZoom = 1.0;
+      state.collagePan = { x: 0, y: 0 };
+      updateCollageSurfaceTransform();
+    });
+  }
+
+  // Drag & Drop on Collage Workspace
+  if (collageWorkspace) {
+    collageWorkspace.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'copy';
+      if (collageDropOverlay) collageDropOverlay.classList.remove('hidden');
+    });
+
+    collageWorkspace.addEventListener('dragleave', (e) => {
+      if (!collageWorkspace.contains(e.relatedTarget)) {
+        if (collageDropOverlay) collageDropOverlay.classList.add('hidden');
+      }
+    });
+
+    collageWorkspace.addEventListener('drop', async (e) => {
+      e.preventDefault();
+      if (collageDropOverlay) collageDropOverlay.classList.add('hidden');
+
+      const surfaceCoords = screenToCollageCoordinates(e.clientX, e.clientY);
+
+      // 1. History Item from DeerPrint
+      const jsonStr = e.dataTransfer.getData('application/json');
+      if (jsonStr) {
+        try {
+          const payload = JSON.parse(jsonStr);
+          if (payload && (payload.src || payload.filePath)) {
+            addPrintToCollage(payload, true, surfaceCoords.x, surfaceCoords.y);
+            return;
+          }
+        } catch (err) {}
+      }
+
+      // 2. External dropped files (e.g. from Desktop/Explorer)
+      if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+        for (let i = 0; i < e.dataTransfer.files.length; i++) {
+          const file = e.dataTransfer.files[i];
+          if (file.type && file.type.startsWith('image/')) {
+            const reader = new FileReader();
+            reader.onload = (re) => {
+              const dataUrl = re.target.result;
+              const testImg = new Image();
+              testImg.onload = () => {
+                addPrintToCollage({
+                  src: dataUrl,
+                  fileName: file.name,
+                  width: testImg.naturalWidth,
+                  height: testImg.naturalHeight
+                }, true, surfaceCoords.x + (i * 30), surfaceCoords.y + (i * 30));
+              };
+              testImg.src = dataUrl;
+            };
+            reader.readAsDataURL(file);
+          }
+        }
+      }
+    });
+
+    // Wheel: Zoom with Ctrl / Pan with Wheel
+    collageWorkspace.addEventListener('wheel', (e) => {
+      if (state.workspaceMode !== 'collage') return;
+      e.preventDefault();
+
+      if (e.ctrlKey || e.metaKey) {
+        const factor = e.deltaY < 0 ? 1.15 : 0.85;
+        const newZoom = Math.max(0.1, Math.min(state.collageZoom * factor, 5.0));
+
+        // Zoom centered around mouse pointer
+        const rect = collageWorkspace.getBoundingClientRect();
+        const mouseX = e.clientX - rect.left - rect.width / 2;
+        const mouseY = e.clientY - rect.top - rect.height / 2;
+
+        state.collagePan.x = mouseX - (mouseX - state.collagePan.x) * (newZoom / state.collageZoom);
+        state.collagePan.y = mouseY - (mouseY - state.collagePan.y) * (newZoom / state.collageZoom);
+        state.collageZoom = newZoom;
+
+        updateCollageSurfaceTransform();
+      } else {
+        state.collagePan.x -= e.deltaX;
+        state.collagePan.y -= e.deltaY;
+        updateCollageSurfaceTransform();
+      }
+    }, { passive: false });
+
+    // Interactive Dragging and Resizing of Collage Items
+    collageWorkspace.addEventListener('mousedown', (e) => {
+      if (state.workspaceMode !== 'collage') return;
+
+      const handle = e.target.closest('.collage-resize-handle');
+      const itemEl = e.target.closest('.collage-item');
+
+      // Clicked on a resize handle
+      if (handle && itemEl) {
+        e.stopPropagation();
+        e.preventDefault();
+        const itemId = itemEl.dataset.id;
+        const item = state.collageItems.find(it => it.id === itemId);
+        if (!item) return;
+
+        state.collageActiveHandle = handle.dataset.handle;
+        state.collageDragInfo = {
+          startX: e.clientX,
+          startY: e.clientY,
+          itemX: item.x,
+          itemY: item.y,
+          itemW: item.width,
+          itemH: item.height,
+          aspect: item.width / item.height,
+          item
+        };
+        return;
+      }
+
+      // Clicked on item body
+      if (itemEl && !e.target.closest('.collage-item-bar')) {
+        e.stopPropagation();
+        const itemId = itemEl.dataset.id;
+        const item = state.collageItems.find(it => it.id === itemId);
+        if (!item) return;
+
+        state.selectedCollageItemId = itemId;
+        state.collageActiveHandle = 'move';
+        state.collageDragInfo = {
+          startX: e.clientX,
+          startY: e.clientY,
+          itemX: item.x,
+          itemY: item.y,
+          itemW: item.width,
+          itemH: item.height,
+          item
+        };
+        renderCollageItems();
+        return;
+      }
+
+      // Clicked on background surface (deselect or pan)
+      if (!e.target.closest('.collage-item') && !e.target.closest('.floating-controls') && !e.target.closest('.collage-empty-hint')) {
+        if (state.selectedCollageItemId) {
+          state.selectedCollageItemId = null;
+          renderCollageItems();
+        }
+        state.collageIsPanning = true;
+        state.collagePanStart = {
+          mouseX: e.clientX,
+          mouseY: e.clientY,
+          initialPanX: state.collagePan.x,
+          initialPanY: state.collagePan.y
+        };
+      }
+    });
+
+    window.addEventListener('mousemove', (e) => {
+      if (state.workspaceMode !== 'collage') return;
+
+      // Handle item move or resize
+      if (state.collageActiveHandle && state.collageDragInfo) {
+        const info = state.collageDragInfo;
+        const dx = (e.clientX - info.startX) / state.collageZoom;
+        const dy = (e.clientY - info.startY) / state.collageZoom;
+        const item = info.item;
+
+        if (state.collageActiveHandle === 'move') {
+          item.x = Math.round(info.itemX + dx);
+          item.y = Math.round(info.itemY + dy);
+          const el = collageItemsContainer.querySelector(`.collage-item[data-id="${item.id}"]`);
+          if (el) {
+            el.style.left = `${item.x}px`;
+            el.style.top = `${item.y}px`;
+          }
+        } else {
+          // Resize handles: nw, ne, se, sw, n, s, e, w
+          let newW = info.itemW;
+          let newH = info.itemH;
+          let newX = info.itemX;
+          let newY = info.itemY;
+          const aspect = info.aspect;
+
+          switch (state.collageActiveHandle) {
+            case 'se':
+              newW = Math.max(50, info.itemW + dx);
+              newH = Math.round(newW / aspect);
+              break;
+            case 'nw':
+              newW = Math.max(50, info.itemW - dx);
+              newH = Math.round(newW / aspect);
+              newX = info.itemX + (info.itemW - newW);
+              newY = info.itemY + (info.itemH - newH);
+              break;
+            case 'ne':
+              newW = Math.max(50, info.itemW + dx);
+              newH = Math.round(newW / aspect);
+              newY = info.itemY + (info.itemH - newH);
+              break;
+            case 'sw':
+              newW = Math.max(50, info.itemW - dx);
+              newH = Math.round(newW / aspect);
+              newX = info.itemX + (info.itemW - newW);
+              break;
+            case 'e':
+              newW = Math.max(50, info.itemW + dx);
+              break;
+            case 'w':
+              newW = Math.max(50, info.itemW - dx);
+              newX = info.itemX + dx;
+              break;
+            case 's':
+              newH = Math.max(50, info.itemH + dy);
+              break;
+            case 'n':
+              newH = Math.max(50, info.itemH - dy);
+              newY = info.itemY + dy;
+              break;
+          }
+
+          item.x = Math.round(newX);
+          item.y = Math.round(newY);
+          item.width = Math.round(newW);
+          item.height = Math.round(newH);
+
+          const el = collageItemsContainer.querySelector(`.collage-item[data-id="${item.id}"]`);
+          if (el) {
+            el.style.left = `${item.x}px`;
+            el.style.top = `${item.y}px`;
+            el.style.width = `${item.width}px`;
+            el.style.height = `${item.height}px`;
+            const dimEl = el.querySelector('.item-bar-dim');
+            if (dimEl) dimEl.textContent = `${item.width} × ${item.height} px`;
+          }
+        }
+        return;
+      }
+
+      // Handle canvas pan
+      if (state.collageIsPanning) {
+        state.collagePan.x = state.collagePanStart.initialPanX + (e.clientX - state.collagePanStart.mouseX);
+        state.collagePan.y = state.collagePanStart.initialPanY + (e.clientY - state.collagePanStart.mouseY);
+        updateCollageSurfaceTransform();
+      }
+    });
+
+    window.addEventListener('mouseup', () => {
+      if (state.collageActiveHandle) {
+        state.collageActiveHandle = null;
+        state.collageDragInfo = null;
+        renderCollageItems();
+      }
+      if (state.collageIsPanning) {
+        state.collageIsPanning = false;
+      }
+    });
+  }
+
+  // Global Keyboard Shortcuts for Collage
+  window.addEventListener('keydown', (e) => {
+    if (state.workspaceMode !== 'collage') return;
+
+    const isTyping = document.activeElement && (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA');
+    if (isTyping) return;
+
+    // Paste with Ctrl+V
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'v') {
+      e.preventDefault();
+      pasteFromClipboardToCollage();
+      return;
+    }
+
+    // Save with Ctrl+S
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
+      e.preventDefault();
+      if (e.shiftKey) {
+        saveCollageAsNewFile(true);
+      } else {
+        saveCollageAsNewFile(false);
+      }
+      return;
+    }
+
+    // Copy with Ctrl+C
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'c') {
+      e.preventDefault();
+      copyCollageToClipboard();
+      return;
+    }
+
+    // Delete selected item with Del or Backspace
+    if (e.key === 'Delete' || e.key === 'Backspace') {
+      if (state.selectedCollageItemId) {
+        e.preventDefault();
+        deleteCollageItem(state.selectedCollageItemId);
+      }
+      return;
+    }
+
+    // Duplicate selected item with Ctrl+D
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'd') {
+      if (state.selectedCollageItemId) {
+        e.preventDefault();
+        duplicateCollageItem(state.selectedCollageItemId);
+      }
+      return;
+    }
+
+    // Deselect with Escape
+    if (e.key === 'Escape') {
+      if (state.selectedCollageItemId) {
+        state.selectedCollageItemId = null;
+        renderCollageItems();
+      }
+      return;
+    }
+
+    // Arrow keys nudge
+    if (state.selectedCollageItemId && ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
+      e.preventDefault();
+      const item = state.collageItems.find(it => it.id === state.selectedCollageItemId);
+      if (!item) return;
+      const step = e.shiftKey ? 10 : 2;
+      if (e.key === 'ArrowUp') item.y -= step;
+      if (e.key === 'ArrowDown') item.y += step;
+      if (e.key === 'ArrowLeft') item.x -= step;
+      if (e.key === 'ArrowRight') item.x += step;
+      const el = collageItemsContainer.querySelector(`.collage-item[data-id="${item.id}"]`);
+      if (el) {
+        el.style.left = `${item.x}px`;
+        el.style.top = `${item.y}px`;
+      }
+    }
+  });
+
+  // Native window paste event listener (supports Ctrl+V anywhere in window)
+  window.addEventListener('paste', (e) => {
+    if (state.workspaceMode !== 'collage') return;
+    const items = (e.clipboardData || e.originalEvent.clipboardData).items;
+    for (const it of items) {
+      if (it.type.indexOf('image') === 0) {
+        const blob = it.getAsFile();
+        const reader = new FileReader();
+        reader.onload = (re) => {
+          const dataUrl = re.target.result;
+          const img = new Image();
+          img.onload = () => {
+            addPrintToCollage({
+              src: dataUrl,
+              fileName: `print_colado_${Date.now()}.png`,
+              width: img.naturalWidth,
+              height: img.naturalHeight
+            }, true);
+          };
+          img.src = dataUrl;
+        };
+        reader.readAsDataURL(blob);
+        break;
+      }
+    }
+  });
+}
+
+// ==========================================================================
 // Event Listeners Setup
 // ==========================================================================
 function setupEventListeners() {
@@ -2566,7 +3791,11 @@ function setupEventListeners() {
   window.addEventListener('keydown', (e) => {
     if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'c' && !state.isRecordingHotkey) {
       if (document.activeElement.tagName !== 'INPUT' && document.activeElement.tagName !== 'TEXTAREA') {
-        copyActiveImage();
+        if (state.workspaceMode === 'collage') {
+          copyCollageToClipboard();
+        } else {
+          copyActiveImage();
+        }
       }
     }
   });
@@ -2903,7 +4132,11 @@ function setupEventListeners() {
 
     if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
       e.preventDefault();
-      saveActiveImageAs();
+      if (state.workspaceMode === 'collage') {
+        saveCollageAsNewFile(e.shiftKey);
+      } else {
+        saveActiveImageAs();
+      }
       return;
     }
 
