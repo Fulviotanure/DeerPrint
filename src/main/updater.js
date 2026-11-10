@@ -193,7 +193,7 @@ function initUpdater(mainWindow, store) {
     setTimeout(() => {
       const activeUpdater = getAutoUpdater();
       if (activeUpdater) {
-        activeUpdater.checkForUpdates().catch(() => {});
+        activeUpdater.checkForUpdates().catch(() => { });
       }
     }, 12000);
   }
